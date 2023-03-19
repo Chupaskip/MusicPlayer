@@ -8,27 +8,10 @@
         android:id="@+id/songsFragment"
         android:name="com.example.musicplayer.ui.fragments.SongsFragment"
         android:label="fragment_songs"
-        tools:layout="@layout/fragment_songs" >
-        <action
-            android:id="@+id/action_songsFragment_to_playerFragment"
-            app:destination="@id/playerFragment" />
-    </fragment>
+        tools:layout="@layout/fragment_songs" />
     <fragment
         android:id="@+id/albumsFragment"
         android:name="com.example.musicplayer.ui.fragments.AlbumsFragment"
         android:label="fragment_albums"
-        tools:layout="@layout/fragment_albums" >
-        <action
-            android:id="@+id/action_albumsFragment_to_playerFragment"
-            app:destination="@id/playerFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/playerFragment"
-        android:name="com.example.musicplayer.ui.fragments.PlayerFragment"
-        android:label="fragment_player"
-        tools:layout="@layout/fragment_player" >
-        <argument
-            android:name="song"
-            app:argType="com.example.musicplayer.ui.models.Song" />
-    </fragment>
+        tools:layout="@layout/fragment_albums" />
 </navigation>

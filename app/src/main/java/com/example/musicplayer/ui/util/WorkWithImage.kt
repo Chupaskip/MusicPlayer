@@ -20,7 +20,7 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 
-class Image {
+class WorkWithImage {
     companion object {
         fun getSongArt(uri: String): ByteArray? {
             val retriever = MediaMetadataRetriever()
@@ -43,7 +43,7 @@ class Image {
                 swatch?.also {
                     val gradientDrawable =
                         GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
-                            intArrayOf(getBrighterOrDarkerColor(swatch.rgb, 0.5), swatch.rgb))
+                            intArrayOf(ContextCompat.getColor(context, R.color.purple_500), swatch.rgb))
                     view.background = gradientDrawable
                 }
             }

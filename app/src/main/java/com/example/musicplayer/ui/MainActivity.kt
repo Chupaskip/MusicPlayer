@@ -8,29 +8,39 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore.Audio.Media
+import android.util.TypedValue
+import android.view.ViewGroup.MarginLayoutParams
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.setMargins
+import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.FragmentContainerView
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.musicplayer.R
 import com.example.musicplayer.databinding.ActivityMainBinding
+import com.example.musicplayer.ui.fragments.PlayerFragment
 import com.example.musicplayer.ui.models.Song
 import com.example.musicplayer.ui.models.setImages
+import kotlinx.coroutines.launch
 
 private const val REQUEST_CODE = 1
 private const val TAG = "MainActivity"
 
 
 class MainActivity : AppCompatActivity() {
+    lateinit var binding: ActivityMainBinding
+
     companion object {
         var songs: ArrayList<Song> = arrayListOf()
     }
 
     private lateinit var navController: NavController
-    lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -40,7 +50,50 @@ class MainActivity : AppCompatActivity() {
         navController = navHostFragment.navController
         binding.bottomNavigationMenu.setupWithNavController(navController)
         requestPermission()
+        binding.mainActivityContainer.getConstraintSet(R.id.start)?.let { start->
+        }
     }
+
+    fun showOrHidePlayer(isVisible: Boolean = false) {
+        supportFragmentManager.fragments.find { f -> f is PlayerFragment }.also {
+            if (it == null)
+                binding.mainActivityContainer.also { mainContainer ->
+                    binding.fragmentContainerView.updateLayoutParams<MarginLayoutParams> {
+                        val marginBottom = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                            0f,
+                            resources.displayMetrics)
+                        bottomMargin = marginBottom.toInt()
+                    }
+                } else {
+                binding.fragmentContainerView.updateLayoutParams<MarginLayoutParams> {
+                    val marginBottom = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                        150f,
+                        resources.displayMetrics)
+                    bottomMargin = marginBottom.toInt()
+                }
+            }
+        }
+        recreate()
+    }
+
+    fun showPlayer(){
+        val params = (binding.fragmentContainerView.layoutParams as ConstraintLayout.LayoutParams)
+        params.setMargins(100,100,100,100)
+        binding.fragmentContainerView.layoutParams = params
+        setContentView(binding.root )
+//        binding.fragmentContainerView.updateLayoutParams<MarginLayoutParams> {
+//            val marginBottom = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+//                100f,
+//                resources.displayMetrics)
+//            bottomMargin = marginBottom.toInt()
+//            recreate()
+//        }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        return super.onSupportNavigateUp() || navController.navigateUp()
+    }
+
 
     private fun requestPermission() {
         if (ContextCompat.checkSelfPermission(applicationContext,
@@ -102,8 +155,21 @@ class MainActivity : AppCompatActivity() {
             cursor.close()
             tempSongs.setImages()
         }
-
         return tempSongs
+    }
+
+    override fun onBackPressed() {
+        supportFragmentManager.fragments.find { f -> f is PlayerFragment }.also {
+            if (it == null) {
+                onBackPressedDispatcher.onBackPressed()
+                return
+            }
+            it as PlayerFragment
+            if (it.binding.mainPlayerContainer.currentState == R.id.start)
+                it.binding.mainPlayerContainer.transitionToStart()
+            else
+                onBackPressedDispatcher.onBackPressed()
+        }
     }
 
 }

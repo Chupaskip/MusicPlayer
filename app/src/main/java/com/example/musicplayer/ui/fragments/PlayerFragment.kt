@@ -3,14 +3,19 @@ package com.example.musicplayer.ui.fragments
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.*
+import android.view.View.TEXT_ALIGNMENT_CENTER
+import android.view.View.TEXT_ALIGNMENT_TEXT_START
 import android.view.animation.Animation
 import android.view.animation.Animation.AnimationListener
 import android.view.animation.AnimationUtils.loadAnimation
 import android.widget.ImageView
 import android.widget.SeekBar
+import android.widget.Toast
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -19,29 +24,48 @@ import com.example.musicplayer.R
 import com.example.musicplayer.databinding.FragmentPlayerBinding
 import com.example.musicplayer.ui.MainActivity
 import com.example.musicplayer.ui.models.Song
-import com.example.musicplayer.ui.util.Image.Companion.getDrawableWithAnotherColor
-import com.example.musicplayer.ui.util.Image.Companion.setGradientBackGround
+import com.example.musicplayer.ui.util.WorkWithImage.Companion.getDrawableWithAnotherColor
+import com.example.musicplayer.ui.util.WorkWithImage.Companion.setGradientBackGround
 import kotlinx.coroutines.*
+import kotlin.math.abs
 
+private const val SONG = "song"
 
 class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
     override val viewBinding: FragmentPlayerBinding
         get() = FragmentPlayerBinding.inflate(layoutInflater)
-    private val args: PlayerFragmentArgs by navArgs()
     private lateinit var song: Song
     private var player: MediaPlayer? = null
     private var isShuffled = false
     private var isRepeated = false
     private var shuffledSongs: ArrayList<Song> = arrayListOf()
+    private var isInStartState: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        song = args.song
+
+        song = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getSerializable(SONG, Song::class.java)!!
+        } else {
+            @Suppress("DEPRECATION")
+            arguments?.getSerializable(SONG) as Song
+        }
     }
 
+    companion object {
+        fun newInstance(song: Song): PlayerFragment = PlayerFragment().also { playerFragment ->
+            playerFragment.arguments = Bundle().also { b ->
+                b.putSerializable(SONG, song)
+            }
+        }
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        (activity as MainActivity).also {
+            it.binding.mainActivityContainer.progress = 1F
+
+        }
 
 
         binding.seekBarSong.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -113,9 +137,49 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
                     R.drawable.ic_repeat))
             }
         }
-        binding.btnClose.setOnClickListener{
-            findNavController().popBackStack()
-        }
+
+        binding.mainPlayerContainer.setTransitionListener(object : MotionLayout.TransitionListener {
+            override fun onTransitionStarted(
+                motionLayout: MotionLayout?,
+                startId: Int,
+                endId: Int,
+            ) {
+            }
+
+            override fun onTransitionChange(
+                motionLayout: MotionLayout?,
+                startId: Int,
+                endId: Int,
+                progress: Float,
+            ) {
+                (requireActivity() as MainActivity).also {
+                    it.binding.mainActivityContainer.progress = abs(progress)
+                }
+            }
+
+            override fun onTransitionCompleted(motionLayout: MotionLayout?, currentId: Int) {
+                (requireActivity() as MainActivity).also {
+                    if (currentId == motionLayout?.startState) {
+                        isPlayerOpened = false
+                        isInStartState = true
+                        it.binding.mainActivityContainer.transitionToStart()
+                    } else {
+                        isInStartState = false
+                        setGradientBackGround(song.path, binding.playerContainer, requireContext())
+                        it.binding.mainActivityContainer.transitionToEnd()
+                    }
+                }
+            }
+
+            override fun onTransitionTrigger(
+                motionLayout: MotionLayout?,
+                triggerId: Int,
+                positive: Boolean,
+                progress: Float,
+            ) {
+            }
+        })
+        binding.mainPlayerContainer.transitionToEnd()
     }
 
 
@@ -186,7 +250,8 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
     }
 
     private fun setInformation() {
-        setGradientBackGround(song.path, binding.playerLayout, requireContext())
+        if (!isInStartState)
+            setGradientBackGround(song.path, binding.playerContainer, requireContext())
         imageAnimation(requireContext(), binding.ivSong, song.image)
         binding.apply {
             tvSongTitle.text = song.title
@@ -207,6 +272,7 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
             override fun onAnimationEnd(animation: Animation?) {
                 Glide.with(context)
                     .load(image)
+                    .override(500)
                     .error(R.drawable.placeholder_no_art)
                     .into(binding.ivSong)
                 imageView.startAnimation(animIn)
@@ -226,6 +292,9 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
         player = null
         isRepeated = false
         isShuffled = false
+//        (requireActivity() as MainActivity).also {
+//            it.binding.mainActivityContainer.progress = 0F
+//        }
     }
 
 
