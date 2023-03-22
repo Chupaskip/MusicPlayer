@@ -1,13 +1,12 @@
 package com.example.musicplayer.ui.fragments
 
 import android.content.Context
+import android.content.res.Configuration
 import android.media.MediaPlayer
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.*
-import android.view.View.TEXT_ALIGNMENT_CENTER
-import android.view.View.TEXT_ALIGNMENT_TEXT_START
 import android.view.animation.Animation
 import android.view.animation.Animation.AnimationListener
 import android.view.animation.AnimationUtils.loadAnimation
@@ -16,58 +15,58 @@ import android.widget.SeekBar
 import android.widget.Toast
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.motion.widget.MotionLayout
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.example.musicplayer.R
 import com.example.musicplayer.databinding.FragmentPlayerBinding
 import com.example.musicplayer.ui.MainActivity
-import com.example.musicplayer.ui.models.Song
+import com.example.musicplayer.models.Song
 import com.example.musicplayer.ui.util.WorkWithImage.Companion.getDrawableWithAnotherColor
 import com.example.musicplayer.ui.util.WorkWithImage.Companion.setGradientBackGround
 import kotlinx.coroutines.*
 import kotlin.math.abs
 
-private const val SONG = "song"
 
 class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
     override val viewBinding: FragmentPlayerBinding
         get() = FragmentPlayerBinding.inflate(layoutInflater)
-    private lateinit var song: Song
     private var player: MediaPlayer? = null
-    private var isShuffled = false
-    private var isRepeated = false
-    private var shuffledSongs: ArrayList<Song> = arrayListOf()
-    private var isInStartState: Boolean = true
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        song = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            arguments?.getSerializable(SONG, Song::class.java)!!
-        } else {
-            @Suppress("DEPRECATION")
-            arguments?.getSerializable(SONG) as Song
-        }
-    }
-
-    companion object {
-        fun newInstance(song: Song): PlayerFragment = PlayerFragment().also { playerFragment ->
-            playerFragment.arguments = Bundle().also { b ->
-                b.putSerializable(SONG, song)
-            }
-        }
-    }
+    private var isBackgroundGradient: Boolean = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        (activity as MainActivity).also {
-            it.binding.mainActivityContainer.progress = 1F
 
+        viewModel.isShuffled.observe(viewLifecycleOwner) { isShuffled ->
+            if (!isShuffled) {
+                binding.btnShuffle.setOnClickListener {
+                    viewModel.setShuffledSongs()
+                }
+                binding.btnShuffle.setImageDrawable(AppCompatResources.getDrawable(requireContext(),
+                    R.drawable.ic_shuffle))
+            } else {
+                binding.btnShuffle.setOnClickListener {
+                    viewModel.removeShuffledSongs()
+                }
+                binding.btnShuffle.setImageDrawable(AppCompatResources.getDrawable(requireContext(),
+                    R.drawable.ic_shuffle_on))
+            }
         }
-
-
+        viewModel.isRepeated.observe(viewLifecycleOwner) { isRepeated ->
+            if (!isRepeated) {
+                binding.btnRepeat.setOnClickListener {
+                    viewModel.setRepeatedSong()
+                }
+                binding.btnRepeat.setImageDrawable(AppCompatResources.getDrawable(requireContext(),
+                    R.drawable.ic_repeat))
+            } else {
+                binding.btnRepeat.setOnClickListener {
+                    viewModel.cancelRepeatedSong()
+                }
+                binding.btnRepeat.setImageDrawable(AppCompatResources.getDrawable(requireContext(),
+                    R.drawable.ic_repeat_on))
+            }
+        }
         binding.seekBarSong.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (player != null && fromUser) {
@@ -91,8 +90,10 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
                 binding.btnPlay.setImageResource(R.drawable.ic_pause)
             }
         }
-        setMediaPlayer()
-        setInformation()
+        viewModel.currentSong.observe(viewLifecycleOwner) { song ->
+            setMediaPlayer(song)
+            setInformation(song)
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             while (true) {
@@ -101,41 +102,16 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
                     val currentDuration = getFormattedTime(currentPosition)
                     binding.seekBarSong.progress = currentPosition
                     binding.tvSongDurationCurrent.text = currentDuration
+                    viewModel.playerPosition = currentPosition*1000
                 }
-                delay(100)
+                delay(1000)
             }
         }
         binding.btnPrevious.setOnClickListener {
-            setPreviousSong()
+            viewModel.setPreviousSong()
         }
         binding.btnNext.setOnClickListener {
-            setNextSong()
-        }
-        binding.btnShuffle.setOnClickListener {
-            if (!isShuffled) {
-                isShuffled = true
-                shuffledSongs = ArrayList(MainActivity.songs)
-                shuffledSongs.shuffle()
-                binding.btnShuffle.setImageDrawable(getDrawableWithAnotherColor(requireContext(),
-                    R.drawable.ic_shuffle,
-                    R.color.purple_200))
-            } else {
-                isShuffled = false
-                binding.btnShuffle.setImageDrawable(AppCompatResources.getDrawable(requireContext(),
-                    R.drawable.ic_shuffle))
-            }
-        }
-        binding.btnRepeat.setOnClickListener {
-            if (!isRepeated) {
-                isRepeated = true
-                binding.btnRepeat.setImageDrawable(getDrawableWithAnotherColor(requireContext(),
-                    R.drawable.ic_repeat,
-                    R.color.purple_200))
-            } else {
-                isRepeated = false
-                binding.btnRepeat.setImageDrawable(AppCompatResources.getDrawable(requireContext(),
-                    R.drawable.ic_repeat))
-            }
+            viewModel.setNextSong()
         }
 
         binding.mainPlayerContainer.setTransitionListener(object : MotionLayout.TransitionListener {
@@ -160,13 +136,9 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
             override fun onTransitionCompleted(motionLayout: MotionLayout?, currentId: Int) {
                 (requireActivity() as MainActivity).also {
                     if (currentId == motionLayout?.startState) {
-                        isPlayerOpened = false
-                        isInStartState = true
-                        it.binding.mainActivityContainer.transitionToStart()
+                        viewModel.setPlayerCollapsed()
                     } else {
-                        isInStartState = false
-                        setGradientBackGround(song.path, binding.playerContainer, requireContext())
-                        it.binding.mainActivityContainer.transitionToEnd()
+                        viewModel.setPlayerExpanded()
                     }
                 }
             }
@@ -179,46 +151,45 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
             ) {
             }
         })
-        binding.mainPlayerContainer.transitionToEnd()
-    }
-
-
-    private fun setPreviousSong() {
-        val positionOfSongInList =
-            if (!isShuffled) MainActivity.songs.indexOf(song) else shuffledSongs.indexOf(song)
-        if (positionOfSongInList > 0) {
-            song =
-                if (!isShuffled) MainActivity.songs[positionOfSongInList - 1] else shuffledSongs[positionOfSongInList - 1]
-            setMediaPlayer()
-            setInformation()
+        if (!viewModel.isPlayerOpened) {
+            binding.mainPlayerContainer.transitionToEnd()
+            hideBottomNav()
+            viewModel.isPlayerOpened = true
+        }
+        viewModel.isPlayerExpanded.observe(viewLifecycleOwner) {
+            if (it) {
+                isBackgroundGradient = true
+                hideBottomNav()
+                binding.mainPlayerContainer.transitionToEnd()
+                setGradientBackGround(viewModel.currentSong.value?.path!!,
+                    binding.playerContainer,
+                    requireContext())
+            } else {
+                isBackgroundGradient = false
+                showBottomNav()
+                binding.mainPlayerContainer.transitionToStart()
+            }
         }
     }
 
 
-    private fun setNextSong() {
-        val positionOfSongInList =
-            if (!isShuffled) MainActivity.songs.indexOf(song) else shuffledSongs.indexOf(song)
-        song = if (positionOfSongInList < MainActivity.songs.size - 1 && !isShuffled) {
-            MainActivity.songs[positionOfSongInList + 1]
-        } else {
-            if (!isShuffled)
-                MainActivity.songs[0]
-            else if (positionOfSongInList < shuffledSongs.size - 1) {
-                shuffledSongs[positionOfSongInList + 1]
-            } else
-                shuffledSongs[0]
+    private fun hideBottomNav() {
+        (activity as MainActivity).also {
+            it.binding.mainActivityContainer.progress = 1F
         }
-        setMediaPlayer()
-        setInformation()
+    }
+
+    private fun showBottomNav() {
+        (activity as MainActivity).also {
+            it.binding.mainActivityContainer.progress = 0F
+        }
     }
 
     private fun getFormattedTime(currentPosition: Int): String {
-        var totalOut = ""
-        var totalNew = ""
         val seconds = (currentPosition % 60).toString()
         val minutes = (currentPosition / 60).toString()
-        totalOut = "$minutes:$seconds"
-        totalNew = "$minutes:0$seconds"
+        val totalOut = "$minutes:$seconds"
+        val totalNew = "$minutes:0$seconds"
         return if (seconds.length == 1) {
             totalNew
         } else {
@@ -227,7 +198,7 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
     }
 
 
-    private fun setMediaPlayer() {
+    private fun setMediaPlayer(song: Song) {
         val uri = Uri.parse(song.path)
         if (player != null) {
             player?.stop()
@@ -238,21 +209,20 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
             player = MediaPlayer.create(requireContext().applicationContext, uri)
             player!!.start()
         }
+        player!!.seekTo(viewModel.playerPosition)
         binding.seekBarSong.max = (player!!.duration / 1000)
         player!!.setOnCompletionListener {
-            if (isRepeated) {
-                player = null
-                setMediaPlayer()
-            } else {
-                setNextSong()
-            }
+            viewModel.setNextSong(true)
         }
     }
 
-    private fun setInformation() {
-        if (!isInStartState)
-            setGradientBackGround(song.path, binding.playerContainer, requireContext())
+    private fun setInformation(song: Song) {
         imageAnimation(requireContext(), binding.ivSong, song.image)
+        if (isBackgroundGradient) {
+            setGradientBackGround(viewModel.currentSong.value?.path!!,
+                binding.playerContainer,
+                requireContext())
+        }
         binding.apply {
             tvSongTitle.text = song.title
             tvSongArtist.text = song.artist
@@ -284,18 +254,9 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
         imageView.startAnimation(animOut)
     }
 
-
     override fun onDestroyView() {
         super.onDestroyView()
-        isPlayerOpened = false
         player?.stop()
         player = null
-        isRepeated = false
-        isShuffled = false
-//        (requireActivity() as MainActivity).also {
-//            it.binding.mainActivityContainer.progress = 0F
-//        }
     }
-
-
 }

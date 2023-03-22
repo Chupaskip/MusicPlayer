@@ -10,8 +10,8 @@
         <KeyFrameSet>
 
             <KeyAttribute
-                android:alpha="1"
-                motion:framePosition="100"
+                android:alpha="0"
+                motion:framePosition="60"
                 motion:motionTarget="@+id/btn_close" />
             <KeyAttribute
                 android:alpha="0"
@@ -21,15 +21,11 @@
                 android:scaleY="0" />
             <KeyAttribute
                 android:alpha="0"
-                motion:framePosition="0"
-                motion:motionTarget="@+id/tv_song_duration_current" />
-            <KeyAttribute
-                android:alpha="0.5"
-                motion:framePosition="0"
+                motion:framePosition="80"
                 motion:motionTarget="@+id/tv_song_duration_current" />
             <KeyAttribute
                 android:alpha="0"
-                motion:framePosition="0"
+                motion:framePosition="80"
                 motion:motionTarget="@+id/tv_song_duration_total" />
             <KeyAttribute
                 android:alpha="0"
@@ -41,29 +37,27 @@
                 motion:motionTarget="@+id/btn_repeat" />
             <KeyAttribute
                 android:alpha="0"
-                motion:framePosition="0"
+                motion:framePosition="60"
                 motion:motionTarget="@+id/tv_song_album" />
             <KeyAttribute
                 android:alpha="0.0"
-                motion:framePosition="1"
+                motion:framePosition="2"
                 motion:motionTarget="@+id/tv_song_title" />
 
             <KeyAttribute
                 android:alpha="0.0"
-                motion:framePosition="1"
+                motion:framePosition="2"
                 motion:motionTarget="@+id/tv_song_artist" />
             <KeyAttribute
-                android:alpha="1"
-                motion:framePosition="100"
+                android:alpha="0"
+                motion:framePosition="60"
                 motion:motionTarget="@+id/btn_menu" />
 
         </KeyFrameSet>
         <OnSwipe
             motion:dragDirection="dragUp"
-            motion:maxAcceleration="10000"
             motion:touchAnchorId="@+id/player_container"
             motion:touchAnchorSide="top" />
-        <!--        <OnClick motion:targetId="@+id/player_container" />-->
     </Transition>
 
     <ConstraintSet android:id="@+id/start">
@@ -77,15 +71,7 @@
             motion:layout_constraintStart_toStartOf="parent"
             motion:layout_constraintTop_toTopOf="parent"
             motion:layout_constraintVertical_bias="0.0" />
-        <Constraint
-            android:id="@+id/tv_song_album"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            motion:layout_constraintEnd_toEndOf="@id/player_container"
-            motion:layout_constraintStart_toStartOf="parent"
-            motion:layout_constraintTop_toTopOf="@id/player_container" >
-        </Constraint>
+
         <Constraint
             android:id="@+id/tv_song_title"
             motion:layout_constraintEnd_toEndOf="@id/player_container"
@@ -121,13 +107,13 @@
         <Constraint
             android:id="@+id/tv_song_artist"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="16dp"
             motion:layout_constraintBottom_toBottomOf="@id/iv_song"
             motion:layout_constraintEnd_toStartOf="@id/btn_previous"
             motion:layout_constraintStart_toEndOf="@id/iv_song"
-            android:layout_marginBottom="4dp">
+            motion:layout_constraintTop_toBottomOf="@id/tv_song_title">
             <CustomAttribute
                 motion:attributeName="textSize"
                 motion:customDimension="5sp" />
@@ -138,7 +124,10 @@
             android:layout_height="wrap_content"
             motion:layout_constraintBottom_toTopOf="@id/btn_play"
             motion:layout_constraintEnd_toStartOf="@+id/tv_song_duration_total"
-            motion:layout_constraintStart_toEndOf="@+id/tv_song_duration_current" />
+            motion:layout_constraintStart_toEndOf="@+id/tv_song_duration_current"
+            android:scaleY="0"
+            android:alpha="0"
+            android:visibility="gone" />
         <Constraint
             android:id="@+id/tv_song_duration_total"
             android:layout_width="0dp"
@@ -146,15 +135,17 @@
             android:layout_marginEnd="32dp"
             motion:layout_constraintBottom_toBottomOf="@+id/seek_bar_song"
             motion:layout_constraintEnd_toEndOf="parent"
-            motion:layout_constraintTop_toTopOf="@+id/seek_bar_song" />
+            motion:layout_constraintTop_toTopOf="@+id/seek_bar_song"
+            android:alpha="0" />
         <Constraint
             android:id="@+id/tv_song_duration_current"
             android:layout_width="wrap_content"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
             motion:layout_constraintBottom_toBottomOf="@+id/seek_bar_song"
             motion:layout_constraintStart_toStartOf="parent"
-            motion:layout_constraintTop_toTopOf="@+id/seek_bar_song" />
+            motion:layout_constraintTop_toTopOf="@+id/seek_bar_song"
+            android:alpha="0" />
         <Constraint
             android:id="@+id/btn_shuffle"
             android:layout_width="30dp"
@@ -181,7 +172,8 @@
             motion:layout_constraintEnd_toEndOf="parent"
             motion:layout_constraintStart_toEndOf="@id/btn_close"
             motion:layout_constraintStart_toStartOf="@id/player_container"
-            motion:layout_constraintTop_toTopOf="@id/player_container" />
+            motion:layout_constraintTop_toTopOf="@id/player_container"
+            android:alpha="0" />
         <Constraint
             android:id="@+id/btn_menu"
             android:layout_width="40dp"
@@ -253,7 +245,7 @@
         <Constraint
             android:id="@+id/tv_song_title"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="18dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"

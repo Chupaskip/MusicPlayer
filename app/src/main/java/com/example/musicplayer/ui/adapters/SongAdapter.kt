@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.musicplayer.R
 import com.example.musicplayer.databinding.ItemSongBinding
-import com.example.musicplayer.ui.models.Song
+import com.example.musicplayer.models.Song
 
 class SongAdapter(private val listener: OnSongClickListener) :
     ListAdapter<Song, SongAdapter.SongViewHolder>(diffUtil) {

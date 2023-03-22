@@ -11,6 +11,7 @@
         android:layout_height="match_parent"
         android:id="@+id/rv_songs"
      android:paddingHorizontal="8dp"
+        android:clipToPadding="false"
         android:paddingBottom="8dp"
         tools:listitem="@layout/item_song"
         android:background="@color/black"/>

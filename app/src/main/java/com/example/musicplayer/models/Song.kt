@@ -1,4 +1,4 @@
-package com.example.musicplayer.ui.models
+package com.example.musicplayer.models
 
 import com.example.musicplayer.ui.util.WorkWithImage
 data class Song(

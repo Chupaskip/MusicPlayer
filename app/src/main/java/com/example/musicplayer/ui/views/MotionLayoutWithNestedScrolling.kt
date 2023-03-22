@@ -5,10 +5,12 @@ import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.widget.Toast
 import androidx.constraintlayout.motion.widget.MotionLayout
 import com.example.musicplayer.R
 
-class MotionLayoutWithNestedScrolling(context: Context, attributeSet: AttributeSet? = null) : MotionLayout(context, attributeSet) {
+class MotionLayoutWithNestedScrolling(context: Context, attributeSet: AttributeSet? = null) :
+    MotionLayout(context, attributeSet) {
 
     private val viewToDetectTouch by lazy {
         findViewById<View>(R.id.player_container)

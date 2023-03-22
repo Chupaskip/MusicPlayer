@@ -5,8 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
+import com.example.musicplayer.ui.MusicViewModel
 
 abstract class BaseFragment<VB : ViewBinding> : Fragment() {
     private var _binding: VB? = null
@@ -39,5 +41,7 @@ abstract class BaseFragment<VB : ViewBinding> : Fragment() {
         val scale: Float = context?.resources?.displayMetrics?.density!!
         return (dps * scale + 0.5f).toInt()
     }
+
+    protected val viewModel:MusicViewModel by activityViewModels()
 
 }
