@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:motion="http://schemas.android.com/apk/res-auto">
+
+    <Transition
+        motion:constraintSetEnd="@+id/start"
+        motion:constraintSetStart="@id/end"
+        motion:duration="500"
+        motion:motionInterpolator="easeInOut">
+        <KeyFrameSet>
+
+            <KeyAttribute
+                android:alpha="0"
+                motion:framePosition="60"
+                motion:motionTarget="@+id/btn_close" />
+            <KeyAttribute
+                android:alpha="0"
+                motion:framePosition="0"
+                motion:motionTarget="@+id/seek_bar_song"
+                android:scaleX="0"
+                android:scaleY="0" />
+            <KeyAttribute
+                android:alpha="0"
+                motion:framePosition="80"
+                motion:motionTarget="@+id/tv_song_duration_current" />
+            <KeyAttribute
+                android:alpha="0"
+                motion:framePosition="80"
+                motion:motionTarget="@+id/tv_song_duration_total" />
+            <KeyAttribute
+                android:alpha="0"
+                motion:framePosition="0"
+                motion:motionTarget="@+id/btn_shuffle" />
+            <KeyAttribute
+                android:alpha="0"
+                motion:framePosition="0"
+                motion:motionTarget="@+id/btn_repeat" />
+            <KeyAttribute
+                android:alpha="0"
+                motion:framePosition="60"
+                motion:motionTarget="@+id/tv_song_album" />
+            <KeyAttribute
+                android:alpha="0.0"
+                motion:framePosition="2"
+                motion:motionTarget="@+id/tv_song_title" />
+
+            <KeyAttribute
+                android:alpha="0.0"
+                motion:framePosition="2"
+                motion:motionTarget="@+id/tv_song_artist" />
+            <KeyAttribute
+                android:alpha="0"
+                motion:framePosition="60"
+                motion:motionTarget="@+id/btn_menu" />
+
+        </KeyFrameSet>
+        <OnSwipe
+            motion:dragDirection="dragUp"
+            motion:touchAnchorId="@+id/player_container"
+            motion:touchAnchorSide="top" />
+    </Transition>
+
+    <ConstraintSet android:id="@+id/start">
+        <Constraint
+            android:id="@+id/player_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            motion:layout_constraintBottom_toBottomOf="parent"
+            motion:layout_constraintEnd_toEndOf="parent"
+            motion:layout_constraintHorizontal_bias="0.0"
+            motion:layout_constraintStart_toStartOf="parent"
+            motion:layout_constraintTop_toTopOf="parent"
+            motion:layout_constraintVertical_bias="0.0" />
+
+        <Constraint
+            android:id="@+id/tv_song_title"
+            motion:layout_constraintEnd_toEndOf="@id/player_container"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            motion:layout_constraintBottom_toTopOf="@id/tv_song_artist"
+            motion:layout_constraintStart_toStartOf="@id/player_container"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp">
+            <CustomAttribute
+                motion:attributeName="textSize"
+                motion:customDimension="8.75sp"/>
+        </Constraint>
+        <Constraint
+            android:id="@+id/tv_song_artist"
+            motion:layout_constraintEnd_toEndOf="@id/player_container"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_marginBottom="48dp"
+            motion:layout_constraintBottom_toTopOf="@id/seek_bar_song"
+            motion:layout_constraintStart_toStartOf="@id/player_container"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp" >
+            <CustomAttribute
+                motion:attributeName="textSize"
+                motion:customDimension="7sp" />
+        </Constraint>
+        <Constraint
+            android:id="@+id/iv_song"
+            motion:layout_constraintEnd_toEndOf="@id/player_container"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            motion:layout_constraintStart_toStartOf="@id/player_container"
+            motion:layout_constraintBottom_toBottomOf="@id/player_container"
+            motion:layout_constraintTop_toTopOf="@id/player_container"
+            android:alpha="0.1"
+            motion:layout_constraintHeight_max="300dp"
+            motion:layout_constraintWidth_max="300dp">
+            <CustomAttribute
+                motion:attributeName="scaleType"
+                motion:customStringValue="centerCrop" />
+        </Constraint>
+
+    </ConstraintSet>
+
+    <ConstraintSet android:id="@+id/end">
+
+        <Constraint
+            android:id="@+id/tv_song_artist"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            motion:layout_constraintBottom_toBottomOf="@id/iv_song"
+            motion:layout_constraintEnd_toStartOf="@id/btn_previous"
+            motion:layout_constraintStart_toEndOf="@id/iv_song"
+            motion:layout_constraintTop_toBottomOf="@id/tv_song_title">
+            <CustomAttribute
+                motion:attributeName="textSize"
+                motion:customDimension="5sp" />
+        </Constraint>
+        <Constraint
+            android:id="@+id/seek_bar_song"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            motion:layout_constraintBottom_toTopOf="@id/btn_play"
+            motion:layout_constraintEnd_toStartOf="@+id/tv_song_duration_total"
+            motion:layout_constraintStart_toEndOf="@+id/tv_song_duration_current"
+            android:scaleY="0"
+            android:alpha="0"
+            android:visibility="gone" />
+        <Constraint
+            android:id="@+id/tv_song_duration_total"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="32dp"
+            motion:layout_constraintBottom_toBottomOf="@+id/seek_bar_song"
+            motion:layout_constraintEnd_toEndOf="parent"
+            motion:layout_constraintTop_toTopOf="@+id/seek_bar_song"
+            android:alpha="0" />
+        <Constraint
+            android:id="@+id/tv_song_duration_current"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            motion:layout_constraintBottom_toBottomOf="@+id/seek_bar_song"
+            motion:layout_constraintStart_toStartOf="parent"
+            motion:layout_constraintTop_toTopOf="@+id/seek_bar_song"
+            android:alpha="0" />
+        <Constraint
+            android:id="@+id/btn_shuffle"
+            android:layout_width="30dp"
+            android:layout_height="1dp"
+            android:layout_marginStart="32dp"
+            motion:layout_constraintBottom_toBottomOf="@id/btn_previous"
+            motion:layout_constraintStart_toStartOf="parent"
+            motion:layout_constraintTop_toTopOf="@id/btn_previous" />
+        <Constraint
+            android:id="@+id/btn_repeat"
+            android:layout_width="30dp"
+            android:layout_height="1dp"
+            android:layout_marginEnd="32dp"
+            motion:layout_constraintBottom_toBottomOf="@id/btn_next"
+            motion:layout_constraintEnd_toEndOf="parent"
+            motion:layout_constraintTop_toTopOf="@id/btn_next" />
+        <Constraint
+            android:id="@+id/tv_song_album"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:scaleX="0"
+            android:scaleY="0"
+            motion:layout_constraintEnd_toEndOf="parent"
+            motion:layout_constraintStart_toEndOf="@id/btn_close"
+            motion:layout_constraintStart_toStartOf="@id/player_container"
+            motion:layout_constraintTop_toTopOf="@id/player_container"
+            android:alpha="0" />
+        <Constraint
+            android:id="@+id/btn_menu"
+            android:layout_width="40dp"
+            android:layout_height="1dp"
+            android:layout_marginEnd="32dp"
+            android:visibility="invisible"
+            motion:layout_constraintBottom_toBottomOf="@id/tv_song_album"
+            motion:layout_constraintEnd_toEndOf="parent"
+            motion:layout_constraintTop_toTopOf="@id/tv_song_album" />
+
+        <Constraint
+            android:id="@+id/btn_play"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            motion:layout_constraintBottom_toBottomOf="@id/player_container"
+            motion:layout_constraintEnd_toStartOf="@+id/btn_repeat"
+            motion:layout_constraintTop_toTopOf="@id/player_container" />
+        <Constraint
+            android:id="@+id/main_activity_container"
+            android:layout_width="match_parent"
+            android:layout_height="100dp" />
+        <Constraint
+            android:id="@+id/btn_previous"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            motion:layout_constraintBottom_toBottomOf="@id/player_container"
+            motion:layout_constraintEnd_toStartOf="@+id/btn_play"
+            motion:layout_constraintTop_toTopOf="@id/player_container" />
+        <Constraint
+            android:id="@+id/btn_next"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="16dp"
+            motion:layout_constraintBottom_toBottomOf="@id/player_container"
+            motion:layout_constraintEnd_toEndOf="@id/player_container"
+            motion:layout_constraintStart_toEndOf="@+id/btn_play"
+            motion:layout_constraintTop_toTopOf="@id/player_container" />
+        <Constraint
+            android:id="@+id/player_container"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginBottom="54dp"
+            motion:layout_constraintBottom_toBottomOf="parent"
+            motion:layout_editor_absoluteX="0dp">
+            <CustomAttribute
+                motion:attributeName="backgroundColor"
+                motion:customColorValue="@color/purple_500" />
+        </Constraint>
+        <Constraint
+            android:id="@+id/btn_close"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginBottom="32dp"
+            android:visibility="invisible"
+            motion:layout_constraintBottom_toBottomOf="parent"
+            motion:layout_constraintStart_toStartOf="parent"
+            motion:layout_constraintTop_toTopOf="@id/tv_song_album" />
+        <Constraint
+            android:id="@+id/iv_song"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="16dp"
+            motion:layout_constraintBottom_toBottomOf="@id/player_container"
+            motion:layout_constraintHeight_max="40dp"
+            motion:layout_constraintStart_toStartOf="@id/player_container"
+            motion:layout_constraintTop_toTopOf="@id/player_container"
+            motion:layout_constraintWidth_max="40dp" />
+        <Constraint
+            android:id="@+id/tv_song_title"
+            android:layout_width="0dp"
+            android:layout_height="18dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            motion:layout_constraintBottom_toTopOf="@id/tv_song_artist"
+            motion:layout_constraintEnd_toStartOf="@id/btn_previous"
+            motion:layout_constraintStart_toEndOf="@id/iv_song"
+            motion:layout_constraintTop_toTopOf="@id/player_container">
+            <CustomAttribute
+                motion:attributeName="textSize"
+                motion:customDimension="5sp"/>
+        </Constraint>
+    </ConstraintSet>
+</MotionScene>

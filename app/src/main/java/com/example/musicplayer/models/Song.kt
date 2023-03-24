@@ -12,7 +12,7 @@ data class Song(
     var image:ByteArray? =null
 }
 
-fun ArrayList<Song>.setImages(){
+fun MutableList<Song>.setImages(){
     this.forEach {song->
         song.image = WorkWithImage.getSongArt(song.path)
     }

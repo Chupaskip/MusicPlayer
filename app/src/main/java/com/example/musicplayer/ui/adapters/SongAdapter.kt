@@ -47,14 +47,7 @@ class SongAdapter(private val listener: OnSongClickListener) :
         }
 
         private fun deleteSong(song: Song) {
-//            val contentUti = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-//                song.id.toLong())
-//            val file = File(song.path)
-//            val isFileDeleted = file.delete()
-//            if (isFileDeleted) {
-//                context.contentResolver.delete(contentUti, null,null)
-//                MainActivity.songs.remove(song)
-//            }
+            listener.onDeleteSong(song)
         }
     }
 
@@ -72,6 +65,7 @@ class SongAdapter(private val listener: OnSongClickListener) :
 
     interface OnSongClickListener {
         fun onSongClick(song: Song)
+        fun onDeleteSong(song:Song)
     }
 
     private lateinit var context: Context

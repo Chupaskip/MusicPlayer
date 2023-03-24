@@ -99,6 +99,17 @@
                 motion:attributeName="textSize"
                 motion:customDimension="7sp" />
         </Constraint>
+        <Constraint
+            android:id="@+id/iv_song"
+            motion:layout_constraintEnd_toEndOf="@id/player_container"
+            motion:layout_constraintHeight_max="300dp"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            motion:layout_constraintBottom_toTopOf="@id/tv_song_title"
+            motion:layout_constraintTop_toBottomOf="@id/tv_song_album"
+            motion:layout_constraintWidth_max="300dp"
+            motion:layout_constraintStart_toStartOf="@id/player_container"
+            motion:layout_constraintStart_toEndOf="@id/player_container" />
 
     </ConstraintSet>
 

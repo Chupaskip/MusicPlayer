@@ -37,7 +37,7 @@ abstract class BaseFragment<VB : ViewBinding> : Fragment() {
             fromDpToPixels(bottom))
     }
 
-    protected fun fromDpToPixels(dps:Int): Int {
+    private fun fromDpToPixels(dps:Int): Int {
         val scale: Float = context?.resources?.displayMetrics?.density!!
         return (dps * scale + 0.5f).toInt()
     }
