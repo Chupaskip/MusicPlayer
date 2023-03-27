@@ -5,7 +5,7 @@
         android:title="Songs"
         android:icon="@drawable/ic_songs"/>
     <item
-        android:id="@id/albumsFragment"
+        android:id="@id/albums_graph"
         android:title="Albums"
         android:icon="@drawable/ic_albums"/>
 </menu>

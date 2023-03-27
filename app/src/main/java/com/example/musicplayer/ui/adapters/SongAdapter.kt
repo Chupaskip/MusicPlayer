@@ -1,6 +1,7 @@
 package com.example.musicplayer.ui.adapters
 
 import android.content.Context
+import android.media.MediaMetadataRetriever
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.PopupMenu
@@ -19,31 +20,29 @@ class SongAdapter(private val listener: OnSongClickListener) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(song: Song) {
-                binding.tvSong.text = song.title
-                binding.tvSongArtist.text = song.artist
-                Glide.with(binding.root)
-                    .load(song.image)
-                    .placeholder(R.drawable.placeholder_no_art)
-                    .error(R.drawable.placeholder_no_art)
-                    .into(binding.ivSong)
-                binding.root.setOnClickListener {
-                    listener.onSongClick(song)
-                }
-                binding.btnMore.setOnClickListener {
-                    val popUpMenu = PopupMenu(context, binding.btnMore)
-                    popUpMenu.menuInflater.inflate(R.menu.pop_up_menu, popUpMenu.menu)
-                    popUpMenu.setOnMenuItemClickListener { option ->
-                        when (option.itemId) {
-                            R.id.delete -> {
-                                deleteSong(song)
-                            }
+            binding.tvSong.text = song.title
+            binding.tvSongArtist.text = song.artist
+            Glide.with(binding.root)
+                .load(song.image)
+                .placeholder(R.drawable.placeholder_no_art)
+                .error(R.drawable.placeholder_no_art)
+                .into(binding.ivSong)
+            binding.root.setOnClickListener {
+                listener.onSongClick(song)
+            }
+            binding.btnMore.setOnClickListener {
+                val popUpMenu = PopupMenu(context, binding.btnMore)
+                popUpMenu.menuInflater.inflate(R.menu.pop_up_menu, popUpMenu.menu)
+                popUpMenu.setOnMenuItemClickListener { option ->
+                    when (option.itemId) {
+                        R.id.delete -> {
+                            deleteSong(song)
                         }
-                        true
                     }
-                    popUpMenu.show()
+                    true
                 }
-
-
+                popUpMenu.show()
+            }
         }
 
         private fun deleteSong(song: Song) {
@@ -64,8 +63,8 @@ class SongAdapter(private val listener: OnSongClickListener) :
     }
 
     interface OnSongClickListener {
-        fun onSongClick(song: Song)
-        fun onDeleteSong(song:Song)
+        fun onSongClick(song: Song){}
+        fun onDeleteSong(song: Song)
     }
 
     private lateinit var context: Context
@@ -79,6 +78,4 @@ class SongAdapter(private val listener: OnSongClickListener) :
     override fun onBindViewHolder(holder: SongViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
-
-
 }

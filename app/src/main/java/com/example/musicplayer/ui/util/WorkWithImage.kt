@@ -16,13 +16,15 @@ import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.palette.graphics.Palette
 import com.example.musicplayer.R
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlin.math.min
 import kotlin.math.roundToInt
 
 
 class WorkWithImage {
     companion object {
-        fun getSongArt(uri: String): ByteArray? {
+         fun getSongArt(uri: String): ByteArray? {
             val retriever = MediaMetadataRetriever()
             retriever.setDataSource(uri)
             val art: ByteArray? = retriever.embeddedPicture
@@ -43,7 +45,8 @@ class WorkWithImage {
                 swatch?.also {
                     val gradientDrawable =
                         GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
-                            intArrayOf(ContextCompat.getColor(context, R.color.purple_500), swatch.rgb))
+                            intArrayOf(ContextCompat.getColor(context, R.color.purple_500),
+                                swatch.rgb))
                     view.background = gradientDrawable
                 }
             }

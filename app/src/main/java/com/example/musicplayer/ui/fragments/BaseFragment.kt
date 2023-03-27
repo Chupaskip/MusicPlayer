@@ -9,6 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.example.musicplayer.ui.MusicViewModel
+import com.example.musicplayer.ui.util.Space.Companion.fromDpToPixels
 
 abstract class BaseFragment<VB : ViewBinding> : Fragment() {
     private var _binding: VB? = null
@@ -30,18 +31,20 @@ abstract class BaseFragment<VB : ViewBinding> : Fragment() {
         _binding = null
     }
 
-    protected fun setPaddingRv(recyclerView: RecyclerView, left: Int, top: Int, right: Int, bottom:Int) {
-        recyclerView.setPadding(fromDpToPixels(left),
-            fromDpToPixels(top),
-            fromDpToPixels(right),
-            fromDpToPixels(bottom))
+    protected fun setPaddingRv(
+        recyclerView: RecyclerView,
+        left: Int,
+        top: Int,
+        right: Int,
+        bottom: Int,
+    ) {
+        recyclerView.setPadding(fromDpToPixels(requireContext(), left),
+            fromDpToPixels(requireContext(), top),
+            fromDpToPixels(requireContext(), right),
+            fromDpToPixels(requireContext(), bottom))
     }
 
-    private fun fromDpToPixels(dps:Int): Int {
-        val scale: Float = context?.resources?.displayMetrics?.density!!
-        return (dps * scale + 0.5f).toInt()
-    }
 
-    protected val viewModel:MusicViewModel by activityViewModels()
+    protected val viewModel: MusicViewModel by activityViewModels()
 
 }

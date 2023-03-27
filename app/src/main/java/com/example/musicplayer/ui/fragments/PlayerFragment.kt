@@ -4,21 +4,20 @@ import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
-import android.view.*
+import android.view.View
 import android.view.animation.Animation
 import android.view.animation.Animation.AnimationListener
 import android.view.animation.AnimationUtils.loadAnimation
 import android.widget.ImageView
 import android.widget.SeekBar
-import android.widget.Toast
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.motion.widget.MotionLayout
 import com.bumptech.glide.Glide
+import com.example.musicplayer.AlbumsGraphDirections
 import com.example.musicplayer.R
 import com.example.musicplayer.databinding.FragmentPlayerBinding
-import com.example.musicplayer.ui.MainActivity
 import com.example.musicplayer.models.Song
+import com.example.musicplayer.ui.MainActivity
 import com.example.musicplayer.ui.util.WorkWithImage.Companion.setGradientBackGround
 import kotlin.math.abs
 
@@ -116,7 +115,7 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
             setSong()
         }
         binding.btnNext.setOnClickListener {
-            viewModel.setNextSong()
+            viewModel.setNextSong(false)
             setSong()
         }
 

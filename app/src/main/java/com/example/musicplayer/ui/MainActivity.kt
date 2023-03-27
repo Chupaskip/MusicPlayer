@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity() {
     private var writePermissionGranted = false
     private lateinit var permissionsLauncher: ActivityResultLauncher<Array<String>>
 
-    private lateinit var navController: NavController
+    lateinit var navController: NavController
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
                    permissions[READ_MEDIA_AUDIO]
                }?:permissions[READ_EXTERNAL_STORAGE]
                 if(hasReadPermission==true){
-                    viewModel.getSongs(this)
+                    viewModel.getSongsAlbums(this)
                 }else{
                     Toast.makeText(this, "To get songs you need to allow read audio files", Toast.LENGTH_SHORT).show()
                 }
@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
             }
         requestPermission()
         if(readPermissionGranted){
-            viewModel.getSongs(this)
+            viewModel.getSongsAlbums(this)
         }
     }
 

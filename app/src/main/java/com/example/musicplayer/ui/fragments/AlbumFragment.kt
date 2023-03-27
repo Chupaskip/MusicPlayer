@@ -1,6 +1,5 @@
 package com.example.musicplayer.ui.fragments
 
-import android.app.Activity.RESULT_OK
 import android.content.ContentUris
 import android.content.IntentSender
 import android.media.MediaPlayer
@@ -12,41 +11,53 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.example.musicplayer.R
-import com.example.musicplayer.databinding.FragmentSongsBinding
-import com.example.musicplayer.models.Album
+import com.example.musicplayer.databinding.FragmentAlbumBinding
 import com.example.musicplayer.models.Song
 import com.example.musicplayer.ui.MainActivity
 import com.example.musicplayer.ui.adapters.SongAdapter
+import kotlinx.coroutines.launch
 import java.io.File
 
-private const val ALBUM_ID = "album_id"
 
-class SongsFragment : BaseFragment<FragmentSongsBinding>(), SongAdapter.OnSongClickListener {
-    override val viewBinding: FragmentSongsBinding
-        get() = FragmentSongsBinding.inflate(layoutInflater)
+class AlbumFragment : BaseFragment<FragmentAlbumBinding>(), SongAdapter.OnSongClickListener {
+    override val viewBinding: FragmentAlbumBinding
+        get() = FragmentAlbumBinding.inflate(layoutInflater)
+    private val args: AlbumFragmentArgs by navArgs()
     private lateinit var songAdapter: SongAdapter
     private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setInformationAlbum()
         setRecyclerViewSongs()
-        intentSenderLauncher =
-            registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
-                if (it.resultCode == RESULT_OK) {
-                    viewModel.getSongsAlbums(requireContext())
-                }
-            }
+    }
+
+    private fun setInformationAlbum() {
+        val album = args.album
+        binding.apply {
+            Glide.with(requireContext())
+                .load(album.image)
+                .placeholder(R.drawable.placeholder_no_art)
+                .error(R.drawable.placeholder_no_art)
+                .into(ivAlbum)
+            tvAlbumTitle.text = album.title
+            tvAlbumYear.text = album.year
+            tvAlbumArtist.text = album.artist
+        }
     }
 
     private fun setRecyclerViewSongs() {
         songAdapter = SongAdapter(this)
         binding.rvSongs.adapter = songAdapter
+        binding.rvSongs.itemAnimator = null
         binding.rvSongs.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-        viewModel.songs.observe(viewLifecycleOwner) { songs ->
+        viewModel.songsByAlbumId.observe(viewLifecycleOwner) { songs ->
             songAdapter.submitList(songs)
         }
         viewModel.isPlayerOpened.observe(viewLifecycleOwner) {
@@ -60,7 +71,7 @@ class SongsFragment : BaseFragment<FragmentSongsBinding>(), SongAdapter.OnSongCl
 
     override fun onSongClick(song: Song) {
         if (viewModel.isSongClickable.value!!) {
-            viewModel.songsInPlayer = viewModel.songs.value!!
+            viewModel.songsInPlayer = viewModel.songsByAlbumId.value!!
             val uri = Uri.parse(song.path)
             viewModel.setMediaPlayer(MediaPlayer.create(requireContext().applicationContext, uri))
             viewModel.setCurrentSong(song)
@@ -109,4 +120,3 @@ class SongsFragment : BaseFragment<FragmentSongsBinding>(), SongAdapter.OnSongCl
         }
     }
 }
-

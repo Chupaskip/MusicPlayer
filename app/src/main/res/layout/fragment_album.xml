@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:context=".ui.fragments.AlbumFragment">
+
+        <ImageView
+            android:id="@+id/iv_album"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="@drawable/rounded_rectangle"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:clipToOutline="true"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@drawable/currents" />
+
+        <TextView
+            android:id="@+id/tv_album_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/iv_album"
+            app:layout_constraintTop_toTopOf="@id/iv_album"
+            tools:text="Currents" />
+
+        <TextView
+            android:id="@+id/tv_album_artist"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:textColor="@color/white_transparent"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/iv_album"
+            app:layout_constraintTop_toBottomOf="@id/tv_album_title"
+            tools:text="Tame Impala" />
+
+        <TextView
+            android:id="@+id/tv_album_year"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:textColor="@color/white_transparent"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/iv_album"
+            app:layout_constraintTop_toBottomOf="@id/tv_album_artist"
+            tools:text="2015" />
+
+        <View
+            android:id="@+id/divider"
+            app:layout_constraintTop_toBottomOf="@id/iv_album"
+            android:background="@color/purple_500"
+            android:layout_marginHorizontal="16dp"
+            android:layout_width="match_parent"
+            android:alpha="0.5"
+            android:layout_marginTop="16dp"
+            android:layout_height="1dp"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/rv_songs"
+            android:paddingHorizontal="16dp"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp"
+            tools:listitem="@layout/item_song"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider"
+            android:background="@color/black"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>
