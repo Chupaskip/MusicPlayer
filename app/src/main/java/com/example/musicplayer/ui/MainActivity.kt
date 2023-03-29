@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
                    permissions[READ_MEDIA_AUDIO]
                }?:permissions[READ_EXTERNAL_STORAGE]
                 if(hasReadPermission==true){
-                    viewModel.getSongsAlbums(this)
+                    viewModel.isReadPermissionGranted.postValue(true)
                 }else{
                     Toast.makeText(this, "To get songs you need to allow read audio files", Toast.LENGTH_SHORT).show()
                 }
@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
             }
         requestPermission()
         if(readPermissionGranted){
-            viewModel.getSongsAlbums(this)
+            viewModel.isReadPermissionGranted.postValue(true)
         }
     }
 

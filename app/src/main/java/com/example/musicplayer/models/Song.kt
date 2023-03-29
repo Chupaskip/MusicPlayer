@@ -1,11 +1,6 @@
 package com.example.musicplayer.models
 
-import android.graphics.Bitmap
-import android.media.MediaMetadataRetriever
 import com.example.musicplayer.ui.util.WorkWithImage
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 
 data class Song(
     val id: String = "",
@@ -15,14 +10,16 @@ data class Song(
     val duration: String = "",
     val albumId: String = "",
     val album: String = "",
-    var numberInAlbum:String = ""
+    var numberInAlbum:String? = ""
 ) : java.io.Serializable {
         var image: ByteArray? = null
 
-    init {
-        image = WorkWithImage.getSongArt(path)
-    }
 }
+suspend fun Song.setImage(){
+    this.image = WorkWithImage.getSongArt(this.path)
+}
+
+
 
 
 

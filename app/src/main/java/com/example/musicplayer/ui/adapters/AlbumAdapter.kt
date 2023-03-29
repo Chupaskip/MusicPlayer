@@ -10,6 +10,10 @@ import com.example.musicplayer.R
 import com.example.musicplayer.databinding.ItemAlbumBinding
 import com.example.musicplayer.models.Album
 import com.example.musicplayer.models.Song
+import com.example.musicplayer.models.setImage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class AlbumAdapter(private val listener: OnAlbumClickListener) :
     ListAdapter<Album, AlbumAdapter.AlbumViewHolder>(diffUtil) {
@@ -38,11 +42,16 @@ class AlbumAdapter(private val listener: OnAlbumClickListener) :
     override fun onBindViewHolder(holder: AlbumViewHolder, position: Int) {
         val album = getItem(position)
         holder.binding.apply {
-            Glide.with(this.root)
-                .load(album.image)
-                .placeholder(R.drawable.placeholder_no_art)
-                .error(R.drawable.placeholder_no_art)
-                .into(this.ivAlbum)
+            CoroutineScope(Dispatchers.Main).launch {
+                if (album.image == null)
+                    album.setImage()
+                Glide.with(this@apply.root)
+                    .load(album.image)
+//                    .placeholder(R.drawable.placeholder_no_art)
+                    .error(R.drawable.placeholder_no_art)
+                    .into(this@apply.ivAlbum)
+            }
+
             tvAlbumTitle.text = album.title
             tvAlbumArtist.text = album.artist
             tvYear.text = album.year ?: ""

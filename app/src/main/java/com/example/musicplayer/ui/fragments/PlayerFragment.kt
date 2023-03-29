@@ -1,8 +1,6 @@
 package com.example.musicplayer.ui.fragments
 
 import android.content.Context
-import android.media.MediaPlayer
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.view.animation.Animation
@@ -12,13 +10,15 @@ import android.widget.ImageView
 import android.widget.SeekBar
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.motion.widget.MotionLayout
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
-import com.example.musicplayer.AlbumsGraphDirections
 import com.example.musicplayer.R
 import com.example.musicplayer.databinding.FragmentPlayerBinding
 import com.example.musicplayer.models.Song
 import com.example.musicplayer.ui.MainActivity
 import com.example.musicplayer.ui.util.WorkWithImage.Companion.setGradientBackGround
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 
@@ -64,7 +64,7 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
         binding.seekBarSong.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    viewModel.player.seekTo(progress * 1000)
+                    viewModel.player!!.seekTo(progress * 1000)
                 }
             }
 
@@ -80,13 +80,13 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
             binding.btnPlay.apply {
                 if (!isPaused) {
                     setOnClickListener {
-                        viewModel.player.pause()
+                        viewModel.player!!.pause()
                         viewModel.playerPaused.value = true
                     }
                     setImageResource(R.drawable.ic_pause)
                 } else {
                     setOnClickListener {
-                        viewModel.player.start()
+                        viewModel.player!!.start()
                         viewModel.playerPaused.value = false
                     }
                     setImageResource(R.drawable.ic_play)
@@ -100,9 +100,8 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
         viewModel.currentDurationInMSec.observe(viewLifecycleOwner) { currentTime ->
             binding.seekBarSong.progress = currentTime / 1000
             binding.tvSongDurationCurrent.text = getFormattedTime(currentTime / 1000)
-            if (viewModel.player.duration - currentTime < 200) {
+            if (viewModel.player!!.duration - currentTime < 200) {
                 viewModel.setNextSong()
-                setSong()
             }
         }
         viewModel.totalDurationOfSong.observe(viewLifecycleOwner) { totalDuration ->
@@ -112,11 +111,9 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
 
         binding.btnPrevious.setOnClickListener {
             viewModel.setPreviousSong()
-            setSong()
         }
         binding.btnNext.setOnClickListener {
             viewModel.setNextSong(false)
-            setSong()
         }
 
         binding.mainPlayerContainer.setTransitionListener(object : MotionLayout.TransitionListener {
@@ -163,22 +160,17 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
                 isBackgroundGradient = true
                 hideBottomNav()
                 binding.mainPlayerContainer.transitionToEnd()
-                setGradientBackGround(viewModel.currentSong.value?.path!!,
-                    binding.playerContainer,
-                    requireContext())
+                lifecycleScope.launch {
+                    setGradientBackGround(viewModel.currentSong.value?.image,
+                        binding.playerContainer,
+                        requireContext())
+                }
             } else {
                 isBackgroundGradient = false
                 showBottomNav()
                 binding.mainPlayerContainer.transitionToStart()
             }
         }
-    }
-
-    private fun setSong(song: Song? = null) {
-        val uri =
-            if (song != null) Uri.parse(song.path) else Uri.parse(viewModel.currentSong.value?.path
-                ?: "")
-        viewModel.setMediaPlayer(MediaPlayer.create(requireContext().applicationContext, uri))
     }
 
     private fun hideBottomNav() {
@@ -208,9 +200,11 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
     private fun setInformation(song: Song) {
         imageAnimation(requireContext(), binding.ivSong, song.image)
         if (isBackgroundGradient) {
-            setGradientBackGround(viewModel.currentSong.value?.path!!,
-                binding.playerContainer,
-                requireContext())
+            lifecycleScope.launch {
+                setGradientBackGround(viewModel.currentSong.value?.image,
+                    binding.playerContainer,
+                    requireContext())
+            }
         }
         binding.apply {
             tvSongTitle.text = song.title

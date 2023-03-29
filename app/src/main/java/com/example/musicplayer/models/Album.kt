@@ -10,8 +10,7 @@ data class Album(
     val year: String?,
 ):java.io.Serializable {
     var image: ByteArray? = null
-
-    init {
-        image = WorkWithImage.getSongArt(path)
-    }
+}
+suspend fun Album.setImage(){
+    this.image = WorkWithImage.getSongArt(this.path)
 }

@@ -71,10 +71,10 @@
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginTop="16dp"
             android:id="@+id/rv_songs"
             android:paddingHorizontal="16dp"
             android:clipToPadding="false"
-            android:paddingBottom="8dp"
             tools:listitem="@layout/item_song"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/divider"

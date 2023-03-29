@@ -1,28 +1,34 @@
 package com.example.musicplayer.ui
 
-import android.content.Context
+import android.app.Application
 import android.database.Cursor
 import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore.Audio.Media
-import android.provider.MediaStore.VOLUME_EXTERNAL_PRIMARY
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import android.provider.MediaStore.VOLUME_EXTERNAL
+import androidx.lifecycle.*
+import com.example.musicplayer.MusicPlayerApplication
 import com.example.musicplayer.models.Album
 import com.example.musicplayer.models.Song
-import com.example.musicplayer.ui.util.Constants.Companion.EMPTY_SEARCH
 import com.example.musicplayer.ui.util.sdk29AndUp
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.*
 import java.util.*
+import javax.inject.Inject
 
-
-class MusicViewModel : ViewModel() {
-    private val _songs = MutableLiveData<MutableList<Song>>()
-    val songs: LiveData<MutableList<Song>> get() = _songs
+@HiltViewModel
+class MusicViewModel @Inject constructor(
+    app: Application,
+) : AndroidViewModel(app) {
+    val isReadPermissionGranted = MutableLiveData(false)
+    private val _songs: LiveData<List<Song>> = Transformations.switchMap(isReadPermissionGranted) {
+        if (it) {
+            return@switchMap getSongsAndAlbums()
+        }
+        return@switchMap null
+    }
+    val songs: LiveData<List<Song>> get() = _songs
 
     private val _songsByAlbumId = MutableLiveData<MutableList<Song>>()
     val songsByAlbumId: LiveData<MutableList<Song>> get() = _songsByAlbumId
@@ -47,7 +53,7 @@ class MusicViewModel : ViewModel() {
 
     val totalDurationOfSong = MutableLiveData<Int>()
 
-    lateinit var player: MediaPlayer
+    var player: MediaPlayer? = null
 
     val playerPaused = MutableLiveData(false)
 
@@ -61,26 +67,24 @@ class MusicViewModel : ViewModel() {
 
     private val shuffledSongs: MutableList<Song> = mutableListOf()
 
-    val searchQuery = MutableLiveData(EMPTY_SEARCH)
+    val searchQuery = MutableLiveData("")
 
-    fun setMediaPlayer(newPlayer: MediaPlayer) {
-        player = if (currentSong.value != null) {
-            player.release()
-            newPlayer
-        } else {
-            newPlayer
-        }
+    private fun setMediaPlayer(uri: Uri) {
+        if (player != null)
+            player!!.release()
+        player =
+            MediaPlayer.create(getApplication<MusicPlayerApplication>().applicationContext, uri)
         playerPaused.postValue(false)
         setTimerOfSong()
-        player.setOnPreparedListener { player.start() }
-        totalDurationOfSong.value = (player.duration / 1000)
+        player!!.setOnPreparedListener { player!!.start() }
+        totalDurationOfSong.value = (player!!.duration / 1000)
     }
 
     fun setTimerOfSong() {
         if (job == null)
             job = viewModelScope.launch {
                 while (true) {
-                    currentDurationInMSec.postValue(player.currentPosition)
+                    currentDurationInMSec.postValue(player!!.currentPosition)
                     delay(500)
                 }
             }
@@ -88,7 +92,7 @@ class MusicViewModel : ViewModel() {
 
     fun setPreviousSong() {
         val position = getPositionOfSong()
-        _currentSong.value =
+        val song =
             if (position > 0) {
                 if (!isShuffled.value!!) songsInPlayer[position - 1] else shuffledSongs[position - 1]
             } else {
@@ -98,15 +102,16 @@ class MusicViewModel : ViewModel() {
                     shuffledSongs[shuffledSongs.size - 1]
                 }
             }
+        setCurrentSong(song)
     }
 
     fun setNextSong(onComplete: Boolean = true) {
         if (isRepeated.value!! && onComplete) {
-            _currentSong.postValue(_currentSong.value)
+            setCurrentSong(currentSong.value!!)
             return
         }
         val position = getPositionOfSong()
-        _currentSong.value = if (!isShuffled.value!!) {
+        val song = if (!isShuffled.value!!) {
             if (position < songsInPlayer.size - 1)
                 songsInPlayer[position + 1]
             else
@@ -118,6 +123,7 @@ class MusicViewModel : ViewModel() {
                 shuffledSongs[0]
             }
         }
+        setCurrentSong(song)
     }
 
     private fun getPositionOfSong(): Int {
@@ -131,6 +137,7 @@ class MusicViewModel : ViewModel() {
     fun setCurrentSong(song: Song) {
         currentDurationInMSec.value = 0
         _currentSong.postValue(song)
+        setMediaPlayer(Uri.parse(song.path))
     }
 
     fun setRepeatedSong() {
@@ -161,12 +168,12 @@ class MusicViewModel : ViewModel() {
         _isPlayerExpanded.postValue(false)
     }
 
-    fun getSongsAlbums(context: Context) {
+    fun getSongsAndAlbums(): LiveData<List<Song>> {
         val tempSongs: MutableList<Song> = mutableListOf()
         val tempAlbums: MutableList<Album> = mutableListOf()
         val uri = sdk29AndUp {
             Media.getContentUri(
-                VOLUME_EXTERNAL_PRIMARY
+                VOLUME_EXTERNAL
             )
         } ?: Media.EXTERNAL_CONTENT_URI
         val selection = StringBuilder("is_music != 0 AND title != ''")
@@ -195,8 +202,9 @@ class MusicViewModel : ViewModel() {
                 Media.YEAR
             )
         }
-        val cursor: Cursor? = context.contentResolver.query(uri, projection,
-            selection.toString(), null, sortOrder)
+        val cursor: Cursor? =
+            getApplication<MusicPlayerApplication>().contentResolver.query(uri, projection,
+                selection.toString(), null, sortOrder)
         if (cursor != null) {
             while (cursor.moveToNext()) {
                 val song = Song(
@@ -229,20 +237,21 @@ class MusicViewModel : ViewModel() {
             tempSongs.remove(it)
         }
         _albums.postValue(tempAlbums)
-        _songs.postValue(tempSongs)
+        return MutableLiveData(tempSongs)
     }
 
-    fun getSongsByAlbumId(context: Context, albumId: String) {
+    fun getSongsByAlbumId(albumId: String) {
         val albumSongs = songs.value!!.filter { song -> song.albumId == albumId }.toMutableList()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            albumSongs.sortBy { song -> song.numberInAlbum.toInt() }
+            albumSongs.sortBy { song -> song.numberInAlbum?.toInt() ?: 0 }
         }
         _songsByAlbumId.postValue(albumSongs)
     }
 
     fun searchSongs(): List<Song> {
         val searchedSongs = songs.value!!.filter { song ->
-            song.title.contains(searchQuery.value!!) || song.artist.contains(searchQuery.value!!)
+            song.title.contains(searchQuery.value!!,
+                true) || song.artist.contains(searchQuery.value!!, true)
         }
         return searchedSongs
     }
