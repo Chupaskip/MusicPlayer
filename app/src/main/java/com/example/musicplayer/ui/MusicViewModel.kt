@@ -168,7 +168,7 @@ class MusicViewModel @Inject constructor(
         _isPlayerExpanded.postValue(false)
     }
 
-    fun getSongsAndAlbums(): LiveData<List<Song>> {
+    private fun getSongsAndAlbums(): LiveData<List<Song>> {
         val tempSongs: MutableList<Song> = mutableListOf()
         val tempAlbums: MutableList<Album> = mutableListOf()
         val uri = sdk29AndUp {
@@ -242,6 +242,9 @@ class MusicViewModel @Inject constructor(
 
     fun getSongsByAlbumId(albumId: String) {
         val albumSongs = songs.value!!.filter { song -> song.albumId == albumId }.toMutableList()
+        songToDelete?.also {
+            albumSongs.remove(it)
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             albumSongs.sortBy { song -> song.numberInAlbum?.toInt() ?: 0 }
         }

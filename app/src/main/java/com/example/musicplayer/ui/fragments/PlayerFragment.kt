@@ -15,6 +15,7 @@ import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.musicplayer.R
 import com.example.musicplayer.databinding.FragmentPlayerBinding
+import com.example.musicplayer.models.Album
 import com.example.musicplayer.models.Song
 import com.example.musicplayer.ui.MainActivity
 import com.example.musicplayer.ui.util.WorkWithImage.Companion.setGradientBackGround
@@ -210,6 +211,34 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>() {
             tvSongTitle.text = song.title
             tvSongArtist.text = song.artist
             tvSongAlbum.text = song.album
+            tvSongAlbum.setOnClickListener {
+                viewModel.songs.value?.filter { s -> s.albumId == song.albumId }.also {
+                    if (it != null) {
+                        if (it.size > 1) {
+                            val album = viewModel.albums.value?.find { a -> a.id == song.albumId }!!
+                            val action = when (findNavController().currentDestination?.id) {
+                                R.id.songsFragment -> {
+                                    SongsFragmentDirections.actionSongsFragmentToAlbumFragment2(
+                                        album)
+                                }
+                                R.id.albumsFragment -> {
+                                    AlbumsFragmentDirections.actionAlbumsFragmentToAlbumFragment(
+                                        album)
+                                }
+                                else -> {
+                                    null
+                                }
+                            }
+                            action?.also {
+                                viewModel.getSongsByAlbumId(viewModel.albums.value?.find { a -> a.id == song.albumId }!!.id)
+                                findNavController().navigate(action)
+                                binding.mainPlayerContainer.transitionToStart()
+                            }
+                        }
+                    }
+                }
+
+            }
         }
     }
 

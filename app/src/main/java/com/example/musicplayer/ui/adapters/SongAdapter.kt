@@ -26,7 +26,7 @@ import com.example.musicplayer.ui.fragments.PlayerFragment
 import kotlinx.coroutines.*
 import java.io.File
 
-class SongAdapter(private val listener: OnSongClickListener) :
+class SongAdapter(private val listener: ISongClick) :
     ListAdapter<Song, SongAdapter.SongViewHolder>(diffUtil) {
 
     inner class SongViewHolder(private val binding: ItemSongBinding) :
@@ -41,7 +41,6 @@ class SongAdapter(private val listener: OnSongClickListener) :
                     song.setImage()
                 Glide.with(binding.root)
                     .load(song.image)
-//                    .placeholder(R.drawable.placeholder_no_art)
                     .error(R.drawable.placeholder_no_art)
                     .into(binding.ivSong)
             }
@@ -90,66 +89,7 @@ class SongAdapter(private val listener: OnSongClickListener) :
             false))
     }
 
-    override fun onBindViewHolder(holder: SongViewHolder, position: Int) {
+        override fun onBindViewHolder(holder: SongViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
-}
-
-interface OnSongClickListener {
-    val viewModelForClick: MusicViewModel
-    val contextForClick: Context
-    val activityForClick: MainActivity
-    val intentSenderLauncherForClick: ActivityResultLauncher<IntentSenderRequest>
-    fun onSongClick(song: Song) {
-        if (song.id == (viewModelForClick.songToDelete?.id ?: "")) {
-            Toast.makeText(contextForClick, "Song is deleted!", Toast.LENGTH_SHORT).show()
-            return
-        }
-        if (viewModelForClick.isSongClickable.value!!) {
-            viewModelForClick.songsInPlayer = viewModelForClick.songs.value!!.toMutableList()
-            viewModelForClick.setCurrentSong(song)
-            activityForClick.supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container_player, PlayerFragment())
-                .commit()
-        }
-    }
-
-    fun onDeleteSong(song: Song) {
-        if (viewModelForClick.currentSong.value == song) {
-            Toast.makeText(contextForClick,
-                "You cannot delete song that is playing currently",
-                Toast.LENGTH_SHORT).show()
-            return
-        }
-        viewModelForClick.songToDelete = song
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val itemUri =
-                ContentUris.withAppendedId(MediaStore.Audio.Media.getContentUri("external"),
-                    song.id.toLong())
-            requestDeletePermission(listOf(itemUri))
-        } else {
-            val contentUti =
-                ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    song.id.toLong())
-            val file = File(song.path)
-            val isFileDeleted = file.delete()
-            if (isFileDeleted) {
-                activityForClick.contentResolver.delete(contentUti, null, null)
-            }
-            viewModelForClick.isReadPermissionGranted.postValue(true)
-        }
-    }
-
-    private fun requestDeletePermission(uriList: List<Uri>) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val pi = MediaStore.createDeleteRequest(activityForClick.contentResolver, uriList)
-            try {
-                intentSenderLauncherForClick.launch(
-                    IntentSenderRequest.Builder(pi.intentSender).build()
-                )
-            } catch (e: IntentSender.SendIntentException) {
-            }
-        }
-    }
-
 }

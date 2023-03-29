@@ -9,6 +9,19 @@
         android:id="@+id/songsFragment"
         android:name="com.example.musicplayer.ui.fragments.SongsFragment"
         android:label="fragment_songs"
-        tools:layout="@layout/fragment_songs"/>
+        tools:layout="@layout/fragment_songs">
+        <action
+            android:id="@+id/action_songsFragment_to_albumFragment2"
+            app:destination="@id/albumFragmentFromSongs" />
+    </fragment>
+    <fragment
+        android:id="@+id/albumFragmentFromSongs"
+        tools:layout="@layout/fragment_album"
+        android:name="com.example.musicplayer.ui.fragments.AlbumFragment"
+        android:label="AlbumFragment" >
+        <argument
+            android:name="album"
+            app:argType="com.example.musicplayer.models.Album" />
+    </fragment>
 
 </navigation>

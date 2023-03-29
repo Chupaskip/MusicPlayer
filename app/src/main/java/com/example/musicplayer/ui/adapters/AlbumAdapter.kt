@@ -47,7 +47,6 @@ class AlbumAdapter(private val listener: OnAlbumClickListener) :
                     album.setImage()
                 Glide.with(this@apply.root)
                     .load(album.image)
-//                    .placeholder(R.drawable.placeholder_no_art)
                     .error(R.drawable.placeholder_no_art)
                     .into(this@apply.ivAlbum)
             }

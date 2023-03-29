@@ -2,7 +2,10 @@ package com.example.musicplayer.ui
 
 import android.Manifest.permission.*
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Bundle
+import android.view.View
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -41,18 +44,20 @@ class MainActivity : AppCompatActivity() {
         binding.bottomNavigationMenu.setupWithNavController(navController)
         permissionsLauncher =
             registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-               val hasReadPermission = sdk33AndUp {
-                   permissions[READ_MEDIA_AUDIO]
-               }?:permissions[READ_EXTERNAL_STORAGE]
-                if(hasReadPermission==true){
+                val hasReadPermission = sdk33AndUp {
+                    permissions[READ_MEDIA_AUDIO]
+                } ?: permissions[READ_EXTERNAL_STORAGE]
+                if (hasReadPermission == true) {
                     viewModel.isReadPermissionGranted.postValue(true)
-                }else{
-                    Toast.makeText(this, "To get songs you need to allow read audio files", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this,
+                        "To get songs you need to allow read audio files",
+                        Toast.LENGTH_SHORT).show()
                 }
 
             }
         requestPermission()
-        if(readPermissionGranted){
+        if (readPermissionGranted) {
             viewModel.isReadPermissionGranted.postValue(true)
         }
     }

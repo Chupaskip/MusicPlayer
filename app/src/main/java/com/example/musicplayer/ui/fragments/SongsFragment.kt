@@ -1,38 +1,27 @@
 package com.example.musicplayer.ui.fragments
 
 import android.app.Activity.RESULT_OK
-import android.content.ContentUris
 import android.content.Context
-import android.content.IntentSender
-import android.media.MediaPlayer
-import android.net.Uri
-import android.os.AsyncTask
-import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.musicplayer.R
 import com.example.musicplayer.databinding.FragmentSongsBinding
 import com.example.musicplayer.models.Song
 import com.example.musicplayer.ui.MainActivity
 import com.example.musicplayer.ui.MusicViewModel
-import com.example.musicplayer.ui.adapters.OnSongClickListener
+import com.example.musicplayer.ui.adapters.ISongClick
 import com.example.musicplayer.ui.adapters.SongAdapter
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.io.File
 
-class SongsFragment : BaseFragment<FragmentSongsBinding>(), OnSongClickListener {
+class SongsFragment : BaseFragment<FragmentSongsBinding>(), ISongClick {
     override val viewBinding: FragmentSongsBinding
         get() = FragmentSongsBinding.inflate(layoutInflater)
     override val contextForClick: Context
@@ -68,6 +57,7 @@ class SongsFragment : BaseFragment<FragmentSongsBinding>(), OnSongClickListener 
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         viewModel.songs.observe(viewLifecycleOwner) { songs ->
             songAdapter.submitList(songs)
+            viewModelForClick.songsInPlayer = songs.toMutableList()
         }
         viewModel.isPlayerOpened.observe(viewLifecycleOwner) {
             if (it) {
@@ -83,7 +73,7 @@ class SongsFragment : BaseFragment<FragmentSongsBinding>(), OnSongClickListener 
         binding.etSearch.addTextChangedListener { searchText ->
             job?.cancel()
             job = lifecycleScope.launch {
-                delay(500)
+                delay(1000)
                 viewModel.searchQuery.value = searchText.toString()
                 if (searchText.toString() == "") {
                     requireActivity().currentFocus?.let { view ->
@@ -98,9 +88,11 @@ class SongsFragment : BaseFragment<FragmentSongsBinding>(), OnSongClickListener 
         }
         viewModel.searchQuery.observe(viewLifecycleOwner) {
             if (it != "") {
-                songAdapter.submitList(viewModel.searchSongs().toList())
+                songAdapter.submitList(viewModel.searchSongs())
+                viewModel.songsInPlayer = viewModel.searchSongs().toMutableList()
             } else {
                 songAdapter.submitList(viewModel.songs.value)
+                viewModel.songsInPlayer = viewModel.songs.value?.toMutableList() ?: mutableListOf()
             }
         }
     }

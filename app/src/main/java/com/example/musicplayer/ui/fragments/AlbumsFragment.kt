@@ -43,7 +43,7 @@ class AlbumsFragment : BaseFragment<FragmentAlbumsBinding>(), AlbumAdapter.OnAlb
     }
 
     override fun onAlbumClick(album: Album) {
-            viewModel.getSongsByAlbumId(album.id)
+        viewModel.getSongsByAlbumId(album.id)
         val action = AlbumsFragmentDirections.actionAlbumsFragmentToAlbumFragment(album)
         findNavController().navigate(action)
     }
