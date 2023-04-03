@@ -1,8 +1,10 @@
 package com.example.musicplayer.ui
 
 import android.Manifest.permission.*
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
@@ -17,6 +19,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.musicplayer.R
 import com.example.musicplayer.databinding.ActivityMainBinding
+import com.example.musicplayer.models.Song
 import com.example.musicplayer.ui.fragments.PlayerFragment
 import com.example.musicplayer.ui.util.sdk29AndUp
 import com.example.musicplayer.ui.util.sdk33AndUp
@@ -38,6 +41,16 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra("TEST", Song::class.java)?.also {
+                viewModel.setCurrentSong(it)
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getParcelableExtra<Song>("TEST")?.also {
+                viewModel.setCurrentSong(it)
+            }
+        }
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.fragment_container_view) as NavHostFragment
         navController = navHostFragment.navController
@@ -60,6 +73,11 @@ class MainActivity : AppCompatActivity() {
         if (readPermissionGranted) {
             viewModel.isReadPermissionGranted.postValue(true)
         }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        this.intent = intent
     }
 
     override fun onSupportNavigateUp(): Boolean {

@@ -37,15 +37,14 @@ class MusicViewModel @Inject constructor(
     private val _currentSong = MutableLiveData<Song>()
 
     val currentSong: LiveData<Song> get() = _currentSong
-    var isPlayerOpened = MutableLiveData<Boolean>()
+    var isPlayerOpened = MutableLiveData<Boolean>(false)
 
     private val _isPlayerExpanded = MutableLiveData<Boolean>()
     val isPlayerExpanded: LiveData<Boolean> get() = _isPlayerExpanded
     private val _isShuffled = MutableLiveData(false)
-
     val isShuffled: LiveData<Boolean> get() = _isShuffled
-    private val _isRepeated = MutableLiveData(false)
 
+    private val _isRepeated = MutableLiveData(false)
     val isRepeated: LiveData<Boolean> get() = _isRepeated
 
     val playerPaused = MutableLiveData(false)

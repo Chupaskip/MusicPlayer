@@ -1,7 +1,10 @@
 package com.example.musicplayer.ui.adapters
 
+import android.app.ActivityManager
+import android.app.Service
 import android.content.ContentUris
 import android.content.Context
+import android.content.Context.ACTIVITY_SERVICE
 import android.content.Intent
 import android.content.IntentSender
 import android.net.Uri
@@ -10,6 +13,7 @@ import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
+import androidx.core.content.ContextCompat.getSystemService
 import com.example.musicplayer.R
 import com.example.musicplayer.models.Song
 import com.example.musicplayer.ui.MainActivity
@@ -25,7 +29,7 @@ interface ISongClick {
     val contextForClick: Context
     val activityForClick: MainActivity
     val intentSenderLauncherForClick: ActivityResultLauncher<IntentSenderRequest>
-    fun onSongClick(song: Song) {
+    fun onSongClick(song: Song, fromUser: Boolean = true) {
         if (song.id == (viewModelForClick.songToDelete?.id ?: "")) {
             Toast.makeText(contextForClick, "Song is deleted!", Toast.LENGTH_SHORT).show()
             return
@@ -33,17 +37,27 @@ interface ISongClick {
         if (viewModelForClick.isSongClickable.value!!) {
             viewModelForClick.setCurrentSong(song)
             val intent = Intent(activityForClick, PlayerService::class.java)
-            if(viewModelForClick.isShuffled.value!!){
-                intent.putParcelableArrayListExtra(SONGS_IN_PLAYER, ArrayList(viewModelForClick.shuffledSongs))
-            }else{
-                intent.putParcelableArrayListExtra(SONGS_IN_PLAYER, viewModelForClick.songsInPlayer)
-            }
+                intent.putParcelableArrayListExtra(SONGS_IN_PLAYER,
+                    viewModelForClick.songsInPlayer)
             intent.putExtra(SONG, song)
-            activityForClick.startService(intent)
-            activityForClick.supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container_player, PlayerFragment())
-                .commit()
+
+            if (!isMyServiceRunning(PlayerService::class.java) || fromUser) {
+                activityForClick.startService(intent)
+            }
+            if (activityForClick.supportFragmentManager.fragments.find { fragment -> fragment == PlayerFragment() } == null) {
+                activityForClick.supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container_player, PlayerFragment())
+                    .commit()
+            }
         }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun isMyServiceRunning(serviceClass: Class<out Service>): Boolean {
+        val manager = activityForClick.getSystemService(ACTIVITY_SERVICE) as ActivityManager
+        return manager.getRunningServices(Int.MAX_VALUE)
+            ?.map { it.service.className }
+            ?.contains(serviceClass.name) ?: false
     }
 
     fun onDeleteSong(song: Song) {

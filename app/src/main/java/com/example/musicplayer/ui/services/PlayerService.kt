@@ -1,18 +1,21 @@
 package com.example.musicplayer.ui.services
 
 import android.app.PendingIntent
-import android.app.PendingIntent.FLAG_IMMUTABLE
+import android.app.PendingIntent.*
 import android.app.Service
 import android.content.Intent
+import android.content.Intent.*
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.media.MediaMetadata
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
 import android.widget.Toast
@@ -75,32 +78,32 @@ class PlayerService() : Service(), MediaPlayer.OnCompletionListener {
             showNotification(R.drawable.ic_pause)
             when (actionName) {
                 "playPause" -> {
-                        if (isPaused) {
-                            start()
-                        } else {
-                            pause()
-                        }
+                    if (isPaused) {
+                        start()
+                    } else {
+                        pause()
+                    }
                     if (playable != null) {
                         playable!!.pausePlayClick()
                     }
                 }
                 "previous" -> {
-                        setPreviousSong()
+                    setPreviousSong()
                 }
                 "next" -> {
-                        setNextSong()
+                    setNextSong()
                 }
                 "close" -> {
-                    if (playable == null){
+                    if (playable == null) {
                         stopForeground(STOP_FOREGROUND_REMOVE)
-                        stopSelf()
                         pause()
+                        stopSelf()
                     }
                     playable?.closePlayer()
                 }
             }
         }
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
 
@@ -192,6 +195,7 @@ class PlayerService() : Service(), MediaPlayer.OnCompletionListener {
     }
 
     fun setShuffledSongs() {
+        shuffledSongs.clear()
         val shuffledList =
             (songsInPlayer.shuffled().toList())
         Collections.swap(shuffledList, 0, shuffledList.indexOf(songInPlayer))
@@ -205,8 +209,10 @@ class PlayerService() : Service(), MediaPlayer.OnCompletionListener {
 
     fun showNotification(playPause: Int) {
         val intent = Intent(baseContext, MainActivity::class.java)
+        intent.putExtra("TEST", songInPlayer)
+        intent.flags = FLAG_ACTIVITY_SINGLE_TOP
         val contentIntent =
-            PendingIntent.getActivity(baseContext, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+            PendingIntent.getActivity(baseContext, 0, intent, FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
         val prevIntent = Intent(baseContext, NotificationReceiver::class.java)
             .setAction(ACTION_PREVIOUS)
         val prevContentIntent =
@@ -240,7 +246,7 @@ class PlayerService() : Service(), MediaPlayer.OnCompletionListener {
         retriever.setDataSource(songInPlayer?.path)
         val byteArray = retriever.embeddedPicture
         byteArray.also { byteArray ->
-            image = if (byteArray != null )
+            image = if (byteArray != null)
                 BitmapFactory.decodeByteArray(byteArray,
                     0,
                     byteArray.size)
@@ -248,9 +254,11 @@ class PlayerService() : Service(), MediaPlayer.OnCompletionListener {
                 AppCompatResources.getDrawable(baseContext, R.drawable.placeholder_no_art)
                     ?.toBitmap(500, 500)
         }
+        val bld = MediaMetadataCompat.Builder()
+        bld.putBitmap(MediaMetadata.METADATA_KEY_ART, image)
+        mediaSessionCompat!!.setMetadata(bld.build())
         val notification = NotificationCompat.Builder(baseContext, CHANNEL_ID_2)
             .setSmallIcon(playPause)
-            .setLargeIcon(image)
             .setContentIntent(contentIntent)
             .setContentTitle(songInPlayer?.title)
             .setContentText(songInPlayer?.artist)

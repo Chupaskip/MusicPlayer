@@ -1,13 +1,20 @@
 package com.example.musicplayer.ui.fragments
 
 import android.app.Activity.RESULT_OK
+import android.app.ActivityManager
+import android.app.Service
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.getSystemService
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,11 +24,12 @@ import com.example.musicplayer.ui.MainActivity
 import com.example.musicplayer.ui.MusicViewModel
 import com.example.musicplayer.ui.adapters.ISongClick
 import com.example.musicplayer.ui.adapters.SongAdapter
+import com.example.musicplayer.ui.services.PlayerService
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class SongsFragment : BaseFragment<FragmentSongsBinding>(), ISongClick {
+class SongsFragment : BaseFragment<FragmentSongsBinding>(), ISongClick, ServiceConnection {
     override val viewBinding: FragmentSongsBinding
         get() = FragmentSongsBinding.inflate(layoutInflater)
     override val contextForClick: Context
@@ -34,6 +42,25 @@ class SongsFragment : BaseFragment<FragmentSongsBinding>(), ISongClick {
         get() = intentSenderLauncher
     private lateinit var songAdapter: SongAdapter
     private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
+    private var playerService:PlayerService? = null
+
+    override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+        val myBinder = service as PlayerService.MyBinder
+        playerService = myBinder.getService()
+        playerService?.songInPlayer?.also {
+            viewModel.setCurrentSong(it)
+        }
+    }
+
+    override fun onServiceDisconnected(name: ComponentName?) {
+        playerService = null
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val intent = Intent(requireContext(), PlayerService::class.java)
+        (activity as MainActivity).bindService(intent, this, Context.BIND_AUTO_CREATE)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -47,8 +74,20 @@ class SongsFragment : BaseFragment<FragmentSongsBinding>(), ISongClick {
                     viewModel.songToDelete = null
                 }
             }
-
+        viewModel.currentSong.observe(viewLifecycleOwner) {
+            if (!viewModel.isPlayerOpened.value!!)
+                onSongClick(it, false)
+        }
     }
+
+    @Suppress("DEPRECATION")
+    private fun isMyServiceRunning(serviceClass: Class<out Service>): Boolean {
+        val manager = activityForClick.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        return manager.getRunningServices(Int.MAX_VALUE)
+            ?.map { it.service.className }
+            ?.contains(serviceClass.name) ?: false
+    }
+
 
     private fun setRecyclerViewSongs() {
         songAdapter = SongAdapter(this)
@@ -92,9 +131,12 @@ class SongsFragment : BaseFragment<FragmentSongsBinding>(), ISongClick {
                 viewModel.songsInPlayer = ArrayList(viewModel.searchSongs())
             } else {
                 songAdapter.submitList(viewModel.songs.value)
-                viewModel.songsInPlayer = ArrayList(viewModel.songs.value?.toMutableList() ?: mutableListOf())
+                viewModel.songsInPlayer =
+                    ArrayList(viewModel.songs.value?.toMutableList() ?: mutableListOf())
             }
         }
     }
+
+
 }
 

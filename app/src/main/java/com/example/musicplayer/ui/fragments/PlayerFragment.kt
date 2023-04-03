@@ -45,6 +45,9 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>(), ServiceConnection,
         playerService = myBinder.getService()
         playerService?.playable = this
         playerService?.songInPlayer = viewModel.currentSong.value
+        if (playerService?.isShuffled!!) {
+            playerService?.setShuffledSongs()
+        }
         lifecycleScope.launch {
             while (true) {
                 binding.seekBarSong.progress = playerService!!.getCurrentPosition()!! / 1000
@@ -54,6 +57,7 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>(), ServiceConnection,
                 binding.tvSongDurationTotal.text =
                     getFormattedTime(playerService!!.getDuration()!! / 1000)
                 delay(100)
+                viewModel.playerPaused.value = playerService?.isPaused
             }
         }
     }
