@@ -11,11 +11,11 @@
         android:label="fragment_songs"
         tools:layout="@layout/fragment_songs">
         <action
-            android:id="@+id/action_songsFragment_to_albumFragment2"
-            app:destination="@id/albumFragmentFromSongs" />
+            android:id="@+id/action_songsFragment_to_albumFragment"
+            app:destination="@id/albumFragment" />
     </fragment>
     <fragment
-        android:id="@+id/albumFragmentFromSongs"
+        android:id="@+id/albumFragment"
         tools:layout="@layout/fragment_album"
         android:name="com.example.musicplayer.ui.fragments.AlbumFragment"
         android:label="AlbumFragment" >

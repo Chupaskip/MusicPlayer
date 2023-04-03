@@ -2,8 +2,6 @@ package com.example.musicplayer.ui
 
 import android.app.Application
 import android.database.Cursor
-import android.media.MediaPlayer
-import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore.Audio.Media
 import android.provider.MediaStore.VOLUME_EXTERNAL
@@ -11,10 +9,10 @@ import androidx.lifecycle.*
 import com.example.musicplayer.MusicPlayerApplication
 import com.example.musicplayer.models.Album
 import com.example.musicplayer.models.Song
+import com.example.musicplayer.ui.util.WorkWithImage
 import com.example.musicplayer.ui.util.sdk29AndUp
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
-import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -49,11 +47,6 @@ class MusicViewModel @Inject constructor(
     private val _isRepeated = MutableLiveData(false)
 
     val isRepeated: LiveData<Boolean> get() = _isRepeated
-    val currentDurationInMSec = MutableLiveData<Int>()
-
-    val totalDurationOfSong = MutableLiveData<Int>()
-
-    var player: MediaPlayer? = null
 
     val playerPaused = MutableLiveData(false)
 
@@ -63,68 +56,11 @@ class MusicViewModel @Inject constructor(
 
     var songToDelete: Song? = null
 
-    var songsInPlayer = mutableListOf<Song>()
+    var songsInPlayer = arrayListOf<Song>()
 
-    private val shuffledSongs: MutableList<Song> = mutableListOf()
+    val shuffledSongs: MutableList<Song> = mutableListOf()
 
     val searchQuery = MutableLiveData("")
-
-    private fun setMediaPlayer(uri: Uri) {
-        if (player != null)
-            player!!.release()
-        player =
-            MediaPlayer.create(getApplication<MusicPlayerApplication>().applicationContext, uri)
-        playerPaused.postValue(false)
-        setTimerOfSong()
-        player!!.setOnPreparedListener { player!!.start() }
-        totalDurationOfSong.value = (player!!.duration / 1000)
-    }
-
-    fun setTimerOfSong() {
-        if (job == null)
-            job = viewModelScope.launch {
-                while (true) {
-                    currentDurationInMSec.postValue(player!!.currentPosition)
-                    delay(500)
-                }
-            }
-    }
-
-    fun setPreviousSong() {
-        val position = getPositionOfSong()
-        val song =
-            if (position > 0) {
-                if (!isShuffled.value!!) songsInPlayer[position - 1] else shuffledSongs[position - 1]
-            } else {
-                if (!isShuffled.value!!) {
-                    songsInPlayer[songsInPlayer.size - 1]
-                } else {
-                    shuffledSongs[shuffledSongs.size - 1]
-                }
-            }
-        setCurrentSong(song)
-    }
-
-    fun setNextSong(onComplete: Boolean = true) {
-        if (isRepeated.value!! && onComplete) {
-            setCurrentSong(currentSong.value!!)
-            return
-        }
-        val position = getPositionOfSong()
-        val song = if (!isShuffled.value!!) {
-            if (position < songsInPlayer.size - 1)
-                songsInPlayer[position + 1]
-            else
-                songsInPlayer[0]
-        } else {
-            if (position < shuffledSongs.size - 1) {
-                shuffledSongs[position + 1]
-            } else {
-                shuffledSongs[0]
-            }
-        }
-        setCurrentSong(song)
-    }
 
     private fun getPositionOfSong(): Int {
         return if (!_isShuffled.value!!) {
@@ -133,13 +69,9 @@ class MusicViewModel @Inject constructor(
             _currentSong.value)
     }
 
-
-    fun setCurrentSong(song: Song) {
-        currentDurationInMSec.value = 0
+    fun setCurrentSong(song:Song){
         _currentSong.postValue(song)
-        setMediaPlayer(Uri.parse(song.path))
     }
-
     fun setRepeatedSong() {
         _isRepeated.postValue(true)
     }
@@ -149,14 +81,10 @@ class MusicViewModel @Inject constructor(
     }
 
     fun setShuffledSongs() {
-        val shuffledList =
-            (songsInPlayer.shuffled().toList())
-        Collections.swap(shuffledList, 0, shuffledList.indexOf(currentSong.value))
-        shuffledSongs.addAll(shuffledList)
         _isShuffled.postValue(true)
     }
 
-    fun removeShuffledSongs() {
+    fun cancelShuffledSongs() {
         _isShuffled.postValue(false)
     }
 
@@ -226,6 +154,11 @@ class MusicViewModel @Inject constructor(
                     cursor.getString(3),
                     cursor.getString(7)
                 )
+                if(song.image==null){
+                    viewModelScope.launch {
+                        song.image = WorkWithImage.getSongArt(song.path)
+                    }
+                }
                 tempSongs.add(song)
                 if (tempAlbums.none { a -> a.id == album.id } && tempSongs.filter { s -> s.albumId == album.id }.size > 1) {
                     tempAlbums.add(album)

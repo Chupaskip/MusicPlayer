@@ -57,7 +57,7 @@ class SongsFragment : BaseFragment<FragmentSongsBinding>(), ISongClick {
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         viewModel.songs.observe(viewLifecycleOwner) { songs ->
             songAdapter.submitList(songs)
-            viewModelForClick.songsInPlayer = songs.toMutableList()
+            viewModelForClick.songsInPlayer = ArrayList(songs)
         }
         viewModel.isPlayerOpened.observe(viewLifecycleOwner) {
             if (it) {
@@ -89,10 +89,10 @@ class SongsFragment : BaseFragment<FragmentSongsBinding>(), ISongClick {
         viewModel.searchQuery.observe(viewLifecycleOwner) {
             if (it != "") {
                 songAdapter.submitList(viewModel.searchSongs())
-                viewModel.songsInPlayer = viewModel.searchSongs().toMutableList()
+                viewModel.songsInPlayer = ArrayList(viewModel.searchSongs())
             } else {
                 songAdapter.submitList(viewModel.songs.value)
-                viewModel.songsInPlayer = viewModel.songs.value?.toMutableList() ?: mutableListOf()
+                viewModel.songsInPlayer = ArrayList(viewModel.songs.value?.toMutableList() ?: mutableListOf())
             }
         }
     }

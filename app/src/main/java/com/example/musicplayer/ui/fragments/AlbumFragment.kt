@@ -50,7 +50,7 @@ class AlbumFragment : BaseFragment<FragmentAlbumBinding>(), ISongClick {
                     viewModel.songToDelete = null
                 }
             }
-        viewModel.songsInPlayer = viewModel.songsByAlbumId.value?.toMutableList() ?: mutableListOf()
+        viewModel.songsInPlayer = ArrayList(viewModel.songsByAlbumId.value?: arrayListOf<Song>())
     }
 
     private fun setInformationAlbum() {

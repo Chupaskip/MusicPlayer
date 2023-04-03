@@ -17,7 +17,7 @@
     </style>
 
     <style name="playerSeekBar" parent="Widget.AppCompat.SeekBar">
-        <item name="android:progressBackgroundTint">@color/purple_500</item>
+        <item name="android:progressBackgroundTint">@color/black</item>
         <item name="android:progressTint">@color/purple_200</item>
         <item name="android:thumbTint">@color/purple_200</item>
     </style>

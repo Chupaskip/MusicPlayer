@@ -2,6 +2,7 @@ package com.example.musicplayer.ui.adapters
 
 import android.content.ContentUris
 import android.content.Context
+import android.content.Intent
 import android.content.IntentSender
 import android.net.Uri
 import android.os.Build
@@ -13,7 +14,10 @@ import com.example.musicplayer.R
 import com.example.musicplayer.models.Song
 import com.example.musicplayer.ui.MainActivity
 import com.example.musicplayer.ui.MusicViewModel
+import com.example.musicplayer.ui.services.PlayerService
 import com.example.musicplayer.ui.fragments.PlayerFragment
+import com.example.musicplayer.ui.fragments.SONG
+import com.example.musicplayer.ui.fragments.SONGS_IN_PLAYER
 import java.io.File
 
 interface ISongClick {
@@ -28,6 +32,14 @@ interface ISongClick {
         }
         if (viewModelForClick.isSongClickable.value!!) {
             viewModelForClick.setCurrentSong(song)
+            val intent = Intent(activityForClick, PlayerService::class.java)
+            if(viewModelForClick.isShuffled.value!!){
+                intent.putParcelableArrayListExtra(SONGS_IN_PLAYER, ArrayList(viewModelForClick.shuffledSongs))
+            }else{
+                intent.putParcelableArrayListExtra(SONGS_IN_PLAYER, viewModelForClick.songsInPlayer)
+            }
+            intent.putExtra(SONG, song)
+            activityForClick.startService(intent)
             activityForClick.supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container_player, PlayerFragment())
                 .commit()
