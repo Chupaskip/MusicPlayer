@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/songsFragment">
+    app:startDestination="@id/authorizationFragment">
     <include app:graph="@navigation/albums_graph"/>
     <fragment
         android:id="@+id/songsFragment"
@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_songsFragment_to_albumFragment"
             app:destination="@id/albumFragment" />
+        <action
+            android:id="@+id/action_songsFragment_to_authorizationFragment"
+            app:destination="@id/authorizationFragment" />
     </fragment>
     <fragment
         android:id="@+id/albumFragment"
@@ -22,6 +25,19 @@
         <argument
             android:name="album"
             app:argType="com.example.musicplayer.models.Album" />
+    </fragment>
+    <fragment
+        android:id="@+id/favoriteFragment"
+        android:name="com.example.musicplayer.ui.fragments.FavoriteFragment"
+        android:label="fragment_favorite"
+        tools:layout="@layout/fragment_favorite" />
+    <fragment
+        android:id="@+id/authorizationFragment"
+        android:name="com.example.musicplayer.ui.fragments.AuthorizationFragment"
+        android:label="AuthorizationFragment" >
+        <action
+            android:id="@+id/action_authorizationFragment_to_songsFragment"
+            app:destination="@id/songsFragment" />
     </fragment>
 
 </navigation>

@@ -1,13 +1,12 @@
 package com.example.musicplayer.ui
 
-import android.Manifest.permission.*
+import android.Manifest.permission.READ_EXTERNAL_STORAGE
+import android.Manifest.permission.READ_MEDIA_AUDIO
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
-import android.view.View
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -15,6 +14,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.musicplayer.R
@@ -72,6 +72,22 @@ class MainActivity : AppCompatActivity() {
         requestPermission()
         if (readPermissionGranted) {
             viewModel.isReadPermissionGranted.postValue(true)
+        }
+        viewModel.isBottomMenuVisible.observe(this){
+            binding.bottomNavigationMenu.alpha = if (it) 1f else 0f
+        }
+        viewModel.isLogin.observe(this) {
+            if (!it)
+                return@observe
+            try {
+                navController.navigate(
+                    R.id.action_authorizationFragment_to_songsFragment,
+                    null,
+                    NavOptions.Builder().setPopUpTo(R.id.authorizationFragment, true).build()
+                )
+            } catch (_: Exception) {
+
+            }
         }
     }
 

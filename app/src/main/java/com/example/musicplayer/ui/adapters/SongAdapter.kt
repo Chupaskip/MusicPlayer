@@ -1,17 +1,9 @@
 package com.example.musicplayer.ui.adapters
 
-import android.content.ContentUris
 import android.content.Context
-import android.content.IntentSender
-import android.net.Uri
-import android.os.Build
-import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.PopupMenu
-import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.IntentSenderRequest
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -20,11 +12,9 @@ import com.example.musicplayer.R
 import com.example.musicplayer.databinding.ItemSongBinding
 import com.example.musicplayer.models.Song
 import com.example.musicplayer.models.setImage
-import com.example.musicplayer.ui.MainActivity
-import com.example.musicplayer.ui.MusicViewModel
-import com.example.musicplayer.ui.fragments.PlayerFragment
-import kotlinx.coroutines.*
-import java.io.File
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class SongAdapter(private val listener: ISongClick) :
     ListAdapter<Song, SongAdapter.SongViewHolder>(diffUtil) {
@@ -56,6 +46,14 @@ class SongAdapter(private val listener: ISongClick) :
                         R.id.delete -> {
                             deleteSong(song)
                         }
+                        R.id.add_favorite -> {
+                            song.isFavorite = true
+                            addToFavorite(song)
+                        }
+                        R.id.delete_favorite -> {
+                            song.isFavorite = false
+                            deleteFromFavorite(song)
+                        }
                     }
                     true
                 }
@@ -65,6 +63,14 @@ class SongAdapter(private val listener: ISongClick) :
 
         private fun deleteSong(song: Song) {
             listener.onDeleteSong(song)
+        }
+
+        private fun addToFavorite(song: Song){
+            listener.addSongToFavorite(song)
+        }
+
+        private fun deleteFromFavorite(song: Song){
+            listener.deleteFromFavorite(song)
         }
     }
 

@@ -7,23 +7,22 @@ import kotlinx.parcelize.IgnoredOnParcel
 
 @Parcelize
 data class Song(
-    val id: String = "",
-    val path: String = "",
-    val title: String = "",
-    val artist: String = "",
-    val duration: String = "",
-    val albumId: String = "",
-    val album: String = "",
-    var numberInAlbum:String? = ""
-):Parcelable  {
+    val id: String,
+    val path: String,
+    val title: String,
+    val artist: String,
+    val duration: String,
+    val albumId: String,
+    val album: String,
+    var numberInAlbum: String? = "",
+    var isFavorite: Boolean = false,
+    var lyrics: String = ""
+) : Parcelable {
     @IgnoredOnParcel
     var image: ByteArray? = null
 }
 suspend fun Song.setImage(){
     this.image = WorkWithImage.getSongArt(this.path)
 }
-
-
-
 
 

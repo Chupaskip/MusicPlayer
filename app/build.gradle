@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace 'com.example.musicplayer'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.example.musicplayer"
@@ -36,6 +36,11 @@ android {
     }
     buildFeatures{
         viewBinding true
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.3.2"
     }
 }
 
@@ -70,4 +75,24 @@ dependencies {
     //Dagger hilt
     implementation("com.google.dagger:hilt-android:2.45")
     kapt("com.google.dagger:hilt-android-compiler:2.44")
+
+    implementation "androidx.room:room-runtime:2.6.0"
+    implementation 'androidx.room:room-ktx:2.6.0'
+    kapt "androidx.room:room-compiler:2.6.0"
+
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:3.12.4'
+    testImplementation "androidx.room:room-testing:2.6.0" // Замените версию на актуальную
+
+    //Jetpack compose
+    // Основные библиотеки Compose для создания UI
+    implementation "androidx.compose.ui:ui:1.3.2"
+    // Библиотеки Compose для Material Design
+    implementation "androidx.compose.material:material:1.6.6"
+    // Утилиты для разработки и отладки Compose интерфейсов
+    implementation "androidx.compose.ui:ui-tooling:1.3.2"
+    // Библиотека для работы Compose с LiveData
+    implementation 'androidx.compose.runtime:runtime-livedata:1.3.2'
+//    // Библиотека для работы Compose с ViewModel
+//    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2"
 }

@@ -9,7 +9,6 @@ import com.bumptech.glide.Glide
 import com.example.musicplayer.R
 import com.example.musicplayer.databinding.ItemAlbumBinding
 import com.example.musicplayer.models.Album
-import com.example.musicplayer.models.Song
 import com.example.musicplayer.models.setImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

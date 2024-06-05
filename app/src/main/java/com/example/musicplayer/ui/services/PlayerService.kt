@@ -1,10 +1,11 @@
 package com.example.musicplayer.ui.services
 
 import android.app.PendingIntent
-import android.app.PendingIntent.*
+import android.app.PendingIntent.FLAG_IMMUTABLE
+import android.app.PendingIntent.FLAG_UPDATE_CURRENT
 import android.app.Service
 import android.content.Intent
-import android.content.Intent.*
+import android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -17,12 +18,15 @@ import android.os.Build
 import android.os.IBinder
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
-import android.util.Log
-import android.widget.Toast
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.NotificationCompat
 import androidx.core.graphics.drawable.toBitmap
-import com.example.musicplayer.*
+import com.example.musicplayer.ACTION_CLOSE
+import com.example.musicplayer.ACTION_NEXT
+import com.example.musicplayer.ACTION_PLAY
+import com.example.musicplayer.ACTION_PREVIOUS
+import com.example.musicplayer.CHANNEL_ID_2
+import com.example.musicplayer.R
 import com.example.musicplayer.models.Song
 import com.example.musicplayer.ui.ACTION_NAME
 import com.example.musicplayer.ui.MainActivity
@@ -30,7 +34,7 @@ import com.example.musicplayer.ui.NotificationReceiver
 import com.example.musicplayer.ui.Playable
 import com.example.musicplayer.ui.fragments.SONG
 import com.example.musicplayer.ui.fragments.SONGS_IN_PLAYER
-import java.util.*
+import java.util.Collections
 
 class PlayerService() : Service(), MediaPlayer.OnCompletionListener {
     private val binder: IBinder = MyBinder()

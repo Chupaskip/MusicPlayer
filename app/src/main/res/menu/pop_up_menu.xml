@@ -3,7 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:title="Delete"
+        android:title="Удалить из устройства"
         android:id="@+id/delete"
+        app:showAsAction="never"/>
+
+    <item
+        android:title="Добавить в избранные"
+        android:id="@+id/add_favorite"
+        app:showAsAction="never"/>
+
+    <item
+        android:title="Удалить из избранных"
+        android:id="@+id/delete_favorite"
         app:showAsAction="never"/>
 </menu>

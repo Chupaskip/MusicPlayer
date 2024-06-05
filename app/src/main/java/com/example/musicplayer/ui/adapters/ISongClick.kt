@@ -13,15 +13,14 @@ import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
-import androidx.core.content.ContextCompat.getSystemService
 import com.example.musicplayer.R
 import com.example.musicplayer.models.Song
 import com.example.musicplayer.ui.MainActivity
 import com.example.musicplayer.ui.MusicViewModel
-import com.example.musicplayer.ui.services.PlayerService
 import com.example.musicplayer.ui.fragments.PlayerFragment
 import com.example.musicplayer.ui.fragments.SONG
 import com.example.musicplayer.ui.fragments.SONGS_IN_PLAYER
+import com.example.musicplayer.ui.services.PlayerService
 import java.io.File
 
 interface ISongClick {
@@ -84,6 +83,14 @@ interface ISongClick {
             }
             viewModelForClick.isReadPermissionGranted.postValue(true)
         }
+    }
+
+    fun addSongToFavorite(song: Song){
+        viewModelForClick.addToDatabase(song, isFavorite = true)
+    }
+
+    fun deleteFromFavorite(song: Song){
+        viewModelForClick.deleteFromFavorites(song)
     }
 
     private fun requestDeletePermission(uriList: List<Uri>) {

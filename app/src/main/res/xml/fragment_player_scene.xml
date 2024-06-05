@@ -51,7 +51,7 @@
             <KeyAttribute
                 android:alpha="0"
                 motion:framePosition="60"
-                motion:motionTarget="@+id/btn_menu" />
+                motion:motionTarget="@+id/btn_lyrics" />
 
         </KeyFrameSet>
         <OnSwipe
@@ -186,7 +186,7 @@
             motion:layout_constraintTop_toTopOf="@id/player_container"
             android:alpha="0" />
         <Constraint
-            android:id="@+id/btn_menu"
+            android:id="@+id/btn_lyrics"
             android:layout_width="40dp"
             android:layout_height="1dp"
             android:layout_marginEnd="32dp"

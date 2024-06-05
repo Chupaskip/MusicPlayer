@@ -8,14 +8,45 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
-import android.view.*
+import android.view.View
 import android.widget.SeekBar
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
-import com.example.musicplayer.*
+import com.example.musicplayer.R
 import com.example.musicplayer.databinding.FragmentPlayerBinding
 import com.example.musicplayer.models.Song
 import com.example.musicplayer.ui.MainActivity
@@ -82,15 +113,23 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>(), ServiceConnection,
                     playerService?.setShuffledSongs()
                     viewModel.setShuffledSongs()
                 }
-                binding.btnShuffle.setImageDrawable(AppCompatResources.getDrawable(requireContext(),
-                    R.drawable.ic_shuffle))
+                binding.btnShuffle.setImageDrawable(
+                    AppCompatResources.getDrawable(
+                        requireContext(),
+                        R.drawable.ic_shuffle
+                    )
+                )
             } else {
                 binding.btnShuffle.setOnClickListener {
                     playerService?.cancelShuffledSongs()
                     viewModel.cancelShuffledSongs()
                 }
-                binding.btnShuffle.setImageDrawable(AppCompatResources.getDrawable(requireContext(),
-                    R.drawable.ic_shuffle_on))
+                binding.btnShuffle.setImageDrawable(
+                    AppCompatResources.getDrawable(
+                        requireContext(),
+                        R.drawable.ic_shuffle_on
+                    )
+                )
             }
         }
         viewModel.isRepeated.observe(viewLifecycleOwner) { isRepeated ->
@@ -99,14 +138,22 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>(), ServiceConnection,
                 binding.btnRepeat.setOnClickListener {
                     viewModel.setRepeatedSong()
                 }
-                binding.btnRepeat.setImageDrawable(AppCompatResources.getDrawable(requireContext(),
-                    R.drawable.ic_repeat))
+                binding.btnRepeat.setImageDrawable(
+                    AppCompatResources.getDrawable(
+                        requireContext(),
+                        R.drawable.ic_repeat
+                    )
+                )
             } else {
                 binding.btnRepeat.setOnClickListener {
                     viewModel.cancelRepeatedSong()
                 }
-                binding.btnRepeat.setImageDrawable(AppCompatResources.getDrawable(requireContext(),
-                    R.drawable.ic_repeat_on))
+                binding.btnRepeat.setImageDrawable(
+                    AppCompatResources.getDrawable(
+                        requireContext(),
+                        R.drawable.ic_repeat_on
+                    )
+                )
             }
         }
         binding.seekBarSong.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -142,7 +189,8 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>(), ServiceConnection,
             }
         }
         viewModel.currentSong.observe(viewLifecycleOwner) { song ->
-            setInformation(song)
+            if (song != null)
+                setInformation(song)
         }
 
         binding.btnNext.setOnClickListener {
@@ -202,14 +250,126 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>(), ServiceConnection,
                 binding.mainPlayerContainer.transitionToEnd()
                 lifecycleScope.launch {
                     val image = WorkWithImage.getSongArt(viewModel.currentSong.value!!.path)
-                    setGradientBackGround(image,
+                    setGradientBackGround(
+                        image,
                         binding.playerContainer,
-                        requireContext())
+                        requireContext()
+                    )
                 }
             } else {
                 isBackgroundGradient = false
                 showBottomNav()
                 binding.mainPlayerContainer.transitionToStart()
+            }
+        }
+
+        binding.btnClose.setOnClickListener {
+            binding.mainPlayerContainer.transitionToStart()
+        }
+
+        binding.btnLyrics.setOnClickListener {
+            viewModel.getSongLyricsFromDb(playerService!!.songInPlayer!!)
+            viewModel.isLyricsDialogVisible.value = true
+        }
+
+        viewModel.isLyricsDialogVisible.observe(viewLifecycleOwner) {
+            binding.composeViewLyrics?.setContent {
+                if (it) {
+                    Dialog(
+                        onDismissRequest = { viewModel.isLyricsDialogVisible.value = false },
+                        properties = DialogProperties(decorFitsSystemWindows = false)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .imePadding()
+                                .clip(RoundedCornerShape(10.dp))
+                        ) {
+                            var changeMode by rememberSaveable { mutableStateOf(false) }
+                            var lyricsText by rememberSaveable {
+                                viewModel.currentSong.value?.lyrics?.let {
+                                    mutableStateOf(it)
+                                } ?: mutableStateOf("")
+                            }
+
+                            Row {
+                                Column {
+                                    if (!changeMode) {
+                                        viewModel.currentSong.observeAsState().value?.lyrics?.let {
+                                            lyricsText = it
+                                            Text(
+                                                text = it.ifBlank { "Текст ещё не добавлен" },
+                                                color = Color.White, fontSize = 24.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier
+                                                    .verticalScroll(rememberScrollState())
+                                                    .fillMaxWidth()
+                                                    .wrapContentSize(Alignment.TopCenter)
+                                                    .weight(1f),
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
+                                    }
+                                    if (changeMode) {
+                                        // Задаем цвета полю
+                                        val outlineTextFieldColors =
+                                            TextFieldDefaults.outlinedTextFieldColors(
+                                                focusedBorderColor = colorResource(id = R.color.purple_700),
+                                                unfocusedBorderColor = colorResource(id = R.color.purple_700),
+                                                textColor = Color.White,
+                                                backgroundColor = Color.Transparent
+                                            )
+                                        TextField(
+                                            value = lyricsText,
+                                            modifier = Modifier
+                                                .weight(1f),
+                                            onValueChange = {
+                                                lyricsText = it
+                                                viewModel.currentSong.value?.lyrics = it
+                                            },
+                                            colors = outlineTextFieldColors
+                                        )
+                                    }
+                                    Button(
+                                        onClick = {
+                                            if (changeMode) {
+                                                viewModel.currentSong.value?.let { song ->
+                                                    viewModel.addToDatabase(
+                                                        song, lyrics = song.lyrics
+                                                    )
+                                                }
+                                            }
+                                            changeMode = !changeMode
+                                        }, modifier = Modifier
+                                            .padding(top = 16.dp)
+                                            .fillMaxWidth(),
+                                        colors = ButtonDefaults.buttonColors(
+                                            backgroundColor = colorResource(
+                                                id = R.color.purple_700
+                                            ), contentColor = Color.White
+                                        )
+                                    ) {
+                                        Text(text = if (!changeMode) "Изменить текст" else "Сохранить текст")
+                                    }
+                                    Button(
+                                        onClick = {
+                                            viewModel.isLyricsDialogVisible.value = false
+                                        }, modifier = Modifier
+                                            .padding(top = 8.dp)
+                                            .fillMaxWidth(),
+                                        colors = ButtonDefaults.buttonColors(
+                                            backgroundColor = colorResource(
+                                                id = R.color.purple_700
+                                            ), contentColor = Color.White
+                                        )
+                                    ) {
+                                        Text(text = "Вернуться к плееру")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -272,12 +432,16 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>(), ServiceConnection,
                         val action = when (findNavController().currentDestination?.id) {
                             R.id.songsFragment -> {
                                 SongsFragmentDirections.actionSongsFragmentToAlbumFragment(
-                                    album)
+                                    album
+                                )
                             }
+
                             R.id.albumsFragment -> {
                                 AlbumsFragmentDirections.actionAlbumsFragmentToAlbumFragment(
-                                    album)
+                                    album
+                                )
                             }
+
                             else -> {
                                 null
                             }
@@ -312,9 +476,11 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>(), ServiceConnection,
                     .error(R.drawable.placeholder_no_art)
                     .into(binding.ivSong)
             if (isBackgroundGradient) {
-                setGradientBackGround(image,
+                setGradientBackGround(
+                    image,
                     binding.playerContainer,
-                    requireContext())
+                    requireContext()
+                )
             }
             prevImage = image
         }
@@ -328,11 +494,13 @@ class PlayerFragment : BaseFragment<FragmentPlayerBinding>(), ServiceConnection,
 
     override fun previousClick() {
         viewModel.setCurrentSong(playerService!!.songInPlayer!!)
+        viewModel.getSongLyricsFromDb(playerService!!.songInPlayer!!)
     }
 
     override fun nextClick() {
         viewModel.playerPaused.postValue(false)
         viewModel.setCurrentSong(playerService!!.songInPlayer!!)
+        viewModel.getSongLyricsFromDb(playerService!!.songInPlayer!!)
     }
 
     override fun onDestroy() {

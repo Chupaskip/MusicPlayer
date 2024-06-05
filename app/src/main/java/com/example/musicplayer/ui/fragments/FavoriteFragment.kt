@@ -1,6 +1,6 @@
 package com.example.musicplayer.ui.fragments
 
-import android.app.Activity.RESULT_OK
+import android.app.Activity
 import android.app.ActivityManager
 import android.app.Service
 import android.content.ComponentName
@@ -15,15 +15,11 @@ import android.view.inputmethod.InputMethodManager
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavOptions
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.musicplayer.R
+import com.example.musicplayer.databinding.FragmentFavoriteBinding
 import com.example.musicplayer.databinding.FragmentSongsBinding
-import com.example.musicplayer.ui.ACTION_NAME
 import com.example.musicplayer.ui.MainActivity
 import com.example.musicplayer.ui.MusicViewModel
 import com.example.musicplayer.ui.adapters.ISongClick
@@ -33,9 +29,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class SongsFragment : BaseFragment<FragmentSongsBinding>(), ISongClick, ServiceConnection {
-    override val viewBinding: FragmentSongsBinding
-        get() = FragmentSongsBinding.inflate(layoutInflater)
+class FavoriteFragment : BaseFragment<FragmentFavoriteBinding>(), ISongClick, ServiceConnection {
+    override val viewBinding: FragmentFavoriteBinding
+        get() = FragmentFavoriteBinding.inflate(layoutInflater)
     override val contextForClick: Context
         get() = requireContext()
     override val activityForClick: MainActivity
@@ -72,7 +68,7 @@ class SongsFragment : BaseFragment<FragmentSongsBinding>(), ISongClick, ServiceC
         setSearchForSongs()
         intentSenderLauncher =
             registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
-                if (it.resultCode == RESULT_OK) {
+                if (it.resultCode == Activity.RESULT_OK) {
                     viewModel.isReadPermissionGranted.postValue(true)
                 } else {
                     viewModel.songToDelete = null
@@ -82,38 +78,25 @@ class SongsFragment : BaseFragment<FragmentSongsBinding>(), ISongClick, ServiceC
             if (!viewModel.isPlayerOpened.value!!)
                 onSongClick(it, false)
         }
-        viewModel.isBottomMenuVisible.value = true
-
-        binding.btnLogout.setOnClickListener {
-            if (viewModel.isPlayerOpened.value == true) {
-                val serviceIntent = Intent(context, PlayerService::class.java)
-                serviceIntent.putExtra(ACTION_NAME, "close")
-                context?.startService(serviceIntent)
-                (activity as MainActivity).also {
-                    val playerFragment =
-                        it.supportFragmentManager.findFragmentById(R.id.fragment_container_player) as? PlayerFragment
-                    playerFragment?.let { it1 ->
-                        it.supportFragmentManager.beginTransaction()
-                            .remove(it1)
-                            .commit()
-                    }
-                }
-            }
-            viewModel.logout()
-            findNavController().navigate(
-                R.id.action_songsFragment_to_authorizationFragment,
-                null,
-                NavOptions.Builder().setPopUpTo(R.id.songsFragment, true).build()
-            )
-        }
     }
 
+    @Suppress("DEPRECATION")
+    private fun isMyServiceRunning(serviceClass: Class<out Service>): Boolean {
+        val manager = activityForClick.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        return manager.getRunningServices(Int.MAX_VALUE)
+            ?.map { it.service.className }
+            ?.contains(serviceClass.name) ?: false
+    }
+
+
     private fun setRecyclerViewSongs() {
+        viewModel.getFavoriteSongs()
         songAdapter = SongAdapter(this)
         binding.rvSongs.adapter = songAdapter
         binding.rvSongs.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-        viewModel.songs.observe(viewLifecycleOwner) { songs ->
+        viewModel.songsFavorite.observe(viewLifecycleOwner) { songs ->
+            Log.d("MyLog", "songs: $songs")
             songAdapter.submitList(songs)
             viewModelForClick.songsInPlayer = ArrayList(songs)
         }
@@ -136,11 +119,9 @@ class SongsFragment : BaseFragment<FragmentSongsBinding>(), ISongClick, ServiceC
                 if (searchText.toString() == "") {
                     requireActivity().currentFocus?.let { view ->
                         val manager = requireActivity().getSystemService(
-                            Context.INPUT_METHOD_SERVICE
-                        ) as InputMethodManager
+                            Context.INPUT_METHOD_SERVICE) as InputMethodManager
                         manager.hideSoftInputFromWindow(
-                            view.windowToken, 0
-                        )
+                            view.windowToken, 0)
                     }
                     binding.etSearch.clearFocus()
                 }
@@ -148,23 +129,15 @@ class SongsFragment : BaseFragment<FragmentSongsBinding>(), ISongClick, ServiceC
         }
         viewModel.searchQuery.observe(viewLifecycleOwner) {
             if (it != "") {
-                songAdapter.submitList(viewModel.searchSongs())
-                viewModel.songsInPlayer = ArrayList(viewModel.searchSongs())
+                songAdapter.submitList(viewModel.searchSongsFavorite())
+                viewModel.songsInPlayer = ArrayList(viewModel.searchSongsFavorite())
             } else {
-                songAdapter.submitList(viewModel.songs.value)
+                songAdapter.submitList(viewModel.songsFavorite.value)
                 viewModel.songsInPlayer =
-                    ArrayList(viewModel.songs.value?.toMutableList() ?: mutableListOf())
+                    ArrayList(viewModel.songsFavorite.value?.toMutableList() ?: mutableListOf())
             }
         }
     }
 
 
-    @Suppress("DEPRECATION")
-    private fun isMyServiceRunning(serviceClass: Class<out Service>): Boolean {
-        val manager = activityForClick.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        return manager.getRunningServices(Int.MAX_VALUE)
-            ?.map { it.service.className }
-            ?.contains(serviceClass.name) ?: false
-    }
 }
-

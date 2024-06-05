@@ -5,7 +5,7 @@
     android:id="@+id/fragment_songs"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.fragments.SongsFragment">
+    tools:context=".ui.fragments.FavoriteFragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar"
@@ -26,29 +26,13 @@
             android:focusableInTouchMode="true"
             app:layout_scrollFlags="scroll|snap|enterAlways">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <ImageView
-                    android:id="@+id/btn_logout"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:tint="@color/purple_200"
-                    android:src="@drawable/ic_logout"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-
-                <com.google.android.material.textfield.TextInputLayout
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/input_search"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Поиск песни"
                 android:textColorHint="@color/purple_200"
                 app:boxCornerRadiusBottomEnd="10dp"
-                    android:layout_marginEnd="16dp"
                 app:boxCornerRadiusBottomStart="10dp"
                 app:boxCornerRadiusTopEnd="10dp"
                 app:boxCornerRadiusTopStart="10dp"
@@ -56,8 +40,8 @@
                 app:boxBackgroundColor="@color/purple_700"
                 app:boxStrokeWidthFocused="0dp"
                 app:hintTextColor="#C7C7c7"
-                    app:layout_constraintEnd_toStartOf="@id/btn_logout"
-               app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:endIconMode="clear_text"
                 app:startIconDrawable="@drawable/ic_search">
@@ -71,7 +55,6 @@
                     android:imeOptions="actionSearch|flagNoExtractUi" />
 
             </com.google.android.material.textfield.TextInputLayout>
-            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>

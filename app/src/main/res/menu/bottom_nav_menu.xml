@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/nav_graph"
+        android:id="@+id/songsFragment"
         android:title="Songs"
         android:icon="@drawable/ic_songs"/>
     <item
         android:id="@id/albums_graph"
         android:title="Albums"
         android:icon="@drawable/ic_albums"/>
+    <item
+        android:id="@id/favoriteFragment"
+        android:title="Favorite"
+        android:icon="@drawable/ic_favorite"/>
 </menu>
