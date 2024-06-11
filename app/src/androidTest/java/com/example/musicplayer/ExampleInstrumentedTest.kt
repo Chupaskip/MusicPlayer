@@ -9,6 +9,7 @@ import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.musicplayer.db.SongDao
+import com.example.musicplayer.db.SongEntity
 import com.example.musicplayer.models.Song
 import com.example.musicplayer.db.SongsDatabase
 import kotlinx.coroutines.CoroutineScope
@@ -43,7 +44,7 @@ class RoomDatabaseTest {
     @Test
     fun insertAndRetrieveData() {
         // Создаем тестовую сущность
-        val entity = Song(
+        val song = Song(
             "1",
             "/emulated/music",
             "The Less I Know The Better",
@@ -52,6 +53,9 @@ class RoomDatabaseTest {
             "235",
             "The Currents",
             "5"
+        )
+        val entity = SongEntity(
+           idMemory =  song.id,
         )
 
         CoroutineScope(Dispatchers.IO).launch {
