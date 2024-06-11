@@ -29,15 +29,14 @@ class AuthorizationFragment : BaseFragment<FragmentAuthorizationBinding>() {
             if(binding.btnAuthorization.text == "Авторизироваться"){
                 viewModel.login(UserEntity(username = binding.etLogin.text.toString(), password = binding.etPassword.text.toString()))
 
-
             }else{
                 if (binding.etPasswordAgain.text.toString() != binding.etPassword.text.toString()) {
                     Toast.makeText(context, "Пароли не совпадают!", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
                 viewModel.register(UserEntity(username = binding.etLogin.text.toString(), password = binding.etPassword.text.toString())){
-                    binding.tvSign.text = "Зарегистрироваться"
                     binding.btnAuthorization.text = "Авторизироваться"
+                    binding.tvSign.text = "Регистрация"
                     binding.inputPasswordAgain.isVisible = false
                     Toast.makeText(context, "Вы зарегестрированы!", Toast.LENGTH_SHORT).show()
                 }

@@ -1,5 +1,6 @@
 package com.example.musicplayer.ui.adapters
 
+import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.app.Service
 import android.content.ContentUris
@@ -28,6 +29,7 @@ interface ISongClick {
     val contextForClick: Context
     val activityForClick: MainActivity
     val intentSenderLauncherForClick: ActivityResultLauncher<IntentSenderRequest>
+    @SuppressLint("SuspiciousIndentation")
     fun onSongClick(song: Song, fromUser: Boolean = true) {
         if (song.id == (viewModelForClick.songToDelete?.id ?: "")) {
             Toast.makeText(contextForClick, "Song is deleted!", Toast.LENGTH_SHORT).show()

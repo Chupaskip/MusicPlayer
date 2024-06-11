@@ -78,35 +78,6 @@ class PlayerService() : Service(), MediaPlayer.OnCompletionListener {
                 createMediaPlayer()
             }
         }
-        intent?.getStringExtra(ACTION_NAME)?.also { actionName ->
-            showNotification(R.drawable.ic_pause)
-            when (actionName) {
-                "playPause" -> {
-                    if (isPaused) {
-                        start()
-                    } else {
-                        pause()
-                    }
-                    if (playable != null) {
-                        playable!!.pausePlayClick()
-                    }
-                }
-                "previous" -> {
-                    setPreviousSong()
-                }
-                "next" -> {
-                    setNextSong()
-                }
-                "close" -> {
-                    if (playable == null) {
-                        stopForeground(STOP_FOREGROUND_REMOVE)
-                        pause()
-                        stopSelf()
-                    }
-                    playable?.closePlayer()
-                }
-            }
-        }
         return START_NOT_STICKY
     }
 

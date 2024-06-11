@@ -287,7 +287,6 @@ class MusicViewModel @Inject constructor(
                         }
                     }.await()
             }
-            Log.d("MyLog", songs.toString())
             songsFavorite.value = songs
         }
     }
